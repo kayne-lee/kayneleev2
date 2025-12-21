@@ -39,8 +39,8 @@ const sectionData = {
     },
     {
       id: 2,
-      title: "Founding Engineer",
-      company: "Advisor Score",
+      title: "Software Engineer",
+      company: "AdvisorScore",
       period: "March 2025 - Present",
       description: "Improved performance by re-architecting a full stack advisor grading application into AWS Lambda microservices, which reduced load times by eighty percent and created a noticeably smoother user experience with faster report generation. I also normalized more than fifteen thousand holdings using semantic search to disambiguate fund names and enforced structured outputs with LangGraph schemas, backed by staging CI/CD tests. This resulted in highly accurate, schema valid reports and a more reliable data pipeline.",
       image: '/as.png',
