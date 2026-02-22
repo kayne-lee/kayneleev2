@@ -21,7 +21,7 @@ export const cloudProps: Omit<ICloud, "children"> = {
       justifyContent: "center",
       alignItems: "center",
       width: "100%",
-      height: "600px",
+      height: "100%",
     },
   },
   options: {
@@ -141,4 +141,3 @@ export default function IconCloud({
     </Cloud>
   );
 }
-

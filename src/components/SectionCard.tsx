@@ -18,20 +18,20 @@ export const SectionCard = ({ title, metric, metricLabel, icon, itemCount, image
   return (
     <Card
       onClick={onClick}
-      className="group relative overflow-hidden cursor-pointer transition-smooth hover:shadow-lg hover:-translate-y-1 border-border bg-card rounded-[24px]"
+      className="group relative h-full overflow-hidden cursor-pointer transition-smooth hover:shadow-lg hover:-translate-y-1 border-border bg-card rounded-[24px]"
     >
-      <div className="p-6 md:p-7 lg:p-8">
-        <div className="flex items-start justify-between mb-5 md:mb-6">
+      <div className="flex h-full flex-col p-4 md:p-4 lg:p-5 xl:p-6">
+        <div className="mb-4 flex items-start justify-between md:mb-5">
           <div className="text-accent transition-smooth group-hover:scale-110">
-            <Icon className="h-8 w-8" />
+            <Icon className="h-6 w-6 md:h-7 md:w-7" />
           </div>
           
           {/* Cascaded Images */}
-          <div className="flex -space-x-3 items-center">
+          <div className="flex items-center -space-x-2 sm:-space-x-3">
             {Array.from({ length: imageCount }).map((_, i) => (
               <div
                 key={i}
-                className="relative w-8 h-8 rounded-full border-2 border-card overflow-hidden shadow-md"
+                className="relative h-6 w-6 overflow-hidden rounded-full border-2 border-card shadow-md sm:h-7 sm:w-7 lg:h-8 lg:w-8"
                 style={{ zIndex: imageCount - i }}
               >
                 {images && images[i] ? (
@@ -50,12 +50,12 @@ export const SectionCard = ({ title, metric, metricLabel, icon, itemCount, image
           </div>
         </div>
         
-        <h2 className="text-2xl font-serif font-semibold mb-3 text-foreground">
+        <h2 className="mb-2 text-lg font-serif font-semibold text-foreground md:text-xl xl:text-2xl">
           {title}
         </h2>
         
         <div className="space-y-1">
-          <div className="text-4xl font-serif font-bold text-primary">
+          <div className="text-2xl font-serif font-bold text-primary md:text-3xl xl:text-4xl">
             {metric}
           </div>
           <p className="text-sm text-muted-foreground uppercase tracking-wide">

@@ -316,7 +316,7 @@ const Index = () => {
           <div className="space-y-6">
             {sectionData.experience.map((job, index) => (
               <div key={job.id} className={`border-l-2 ${index === 0 ? 'border-accent' : 'border-muted'} pl-6 space-y-2`}>
-                <div className="flex gap-4 items-start">
+                <div className="flex flex-col items-start gap-4 sm:flex-row">
                   <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden">
                     {job.image ? (
                       <img src={job.image} alt={job.title} className="w-full h-full object-contain" />
@@ -326,7 +326,7 @@ const Index = () => {
                       </div>
                     )}
                   </div>
-                  <div className="flex-1 space-y-2">
+                  <div className="min-w-0 flex-1 space-y-2">
                     <div>
                       <h3 className="text-2xl font-serif font-semibold">{job.title}</h3>
                       <p className={index === 0 ? "text-accent font-medium" : "text-muted-foreground font-medium"}>{job.company}</p>
@@ -344,7 +344,7 @@ const Index = () => {
         return (
           <div className="space-y-8">
             <div className="border-l-2 border-accent pl-6 space-y-2">
-              <div className="flex justify-between items-start">
+              <div className="flex flex-col items-start gap-2 sm:flex-row sm:justify-between">
                 <div>
                   <h3 className="text-2xl font-serif font-semibold">B.S. Computer Engineering</h3>
                   <p className="text-accent font-medium">Queen's University</p>
@@ -353,7 +353,7 @@ const Index = () => {
               </div>
               <div className="space-y-2 mt-4">
                 <p className="font-medium">Relevant Coursework:</p>
-                <ul className="grid grid-cols-2 gap-2 text-muted-foreground">
+                <ul className="grid grid-cols-1 gap-2 text-muted-foreground sm:grid-cols-2">
                   <li>• Data Structures & Algorithms</li>
                   <li>• Computer Architecture</li>
                   <li>• Operating Systems</li>
@@ -381,7 +381,7 @@ const Index = () => {
           <div className="grid gap-6">
             {sectionData.projects.map((project) => (
               <div key={project.id} className="border border-border rounded-lg p-6 hover:border-accent transition-smooth">
-                <div className="flex gap-4 items-start">
+                <div className="flex flex-col items-start gap-4 sm:flex-row">
                   <div className="flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden">
                     {project.image ? (
                       <img src={project.image} alt={project.title} className="w-full h-full object-contain" />
@@ -391,7 +391,7 @@ const Index = () => {
                       </div>
                     )}
                   </div>
-                  <div className="flex-1 flex-shrink-0">
+                  <div className="min-w-0 flex-1">
                     <h3 className="text-2xl font-serif font-semibold mb-2">{project.title}</h3>
                     <p className="text-muted-foreground mb-4 leading-relaxed">{project.description}</p>
                     <div className="flex flex-wrap gap-2 mb-3">
@@ -450,7 +450,7 @@ const Index = () => {
         ];
 
         return (
-          <div className="w-full h-[600px] overflow-hidden rounded-lg">
+          <div className="h-[280px] w-full overflow-hidden rounded-lg sm:h-[360px] md:h-[420px] lg:h-[520px] xl:h-[600px]">
             <IconCloud iconSlugs={techSlugs} />
           </div>
         );
@@ -460,7 +460,7 @@ const Index = () => {
           <div className="grid md:grid-cols-2 gap-6">
             {sectionData.hobbies.map((hobby) => (
               <div key={hobby.id} className="border border-border rounded-lg p-6 hover:border-accent transition-smooth">
-                <div className="flex gap-3 items-start">
+                <div className="flex flex-col items-start gap-3 sm:flex-row">
                   <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden">
                     {hobby.image ? (
                       <img src={hobby.image} alt={hobby.title} className="w-full h-full object-contain" />
@@ -470,7 +470,7 @@ const Index = () => {
                       </div>
                     )}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <h3 className="text-xl font-serif font-semibold mb-3">{hobby.title}</h3>
                     <p className="text-muted-foreground leading-relaxed">{hobby.description}</p>
                   </div>
@@ -491,7 +491,7 @@ const Index = () => {
                   <div key={project.id} className={`border-l-2 ${index === 0 ? 'border-accent' : 'border-muted'} pl-4 space-y-2`}>
                     <h4 className="text-xl font-medium">{project.title}</h4>
                     <p className="text-muted-foreground">{project.description}</p>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {project.tech.map((tech) => (
                         <span key={tech} className="px-2 py-1 bg-secondary text-xs rounded">{tech}</span>
                       ))}
@@ -504,7 +504,7 @@ const Index = () => {
             {/* Gym Progress */}
             <div>
               <h3 className="text-2xl font-serif font-semibold mb-4">Gym Progress</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {sectionData.current.gymProgress.map((stat, index) => (
                   <div key={index} className="border border-border rounded-lg p-4">
                     <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
@@ -519,13 +519,13 @@ const Index = () => {
               <h3 className="text-2xl font-serif font-semibold mb-4">Currently Reading</h3>
               <div className="space-y-3">
                 {sectionData.current.books.map((book, index) => (
-                  <div key={book.id} className="flex gap-4 items-start">
+                  <div key={book.id} className="flex flex-col items-start gap-4 sm:flex-row">
                     {book.image ? (
                       <img src={book.image} alt={book.title} className="w-16 h-24 object-contain rounded bg-accent/10" />
                     ) : (
                       <div className="flex-shrink-0 w-16 h-24 bg-gradient-to-br from-accent/20 to-accent/40 rounded"></div>
                     )}
-                    <div>
+                    <div className="min-w-0">
                       <h4 className="text-lg font-medium">"{book.title}" by {book.author}</h4>
                       <p className="text-sm text-muted-foreground">{book.description}</p>
                       <p className="text-xs text-muted-foreground mt-2">Progress: {book.progress}%</p>
@@ -571,7 +571,7 @@ const Index = () => {
           <div className="space-y-6">
             {sectionData.extracurriculars.map((activity, index) => (
               <div key={activity.id} className={`border-l-2 ${index === 0 ? 'border-accent' : 'border-muted'} pl-6 space-y-2`}>
-                <div className="flex gap-4 items-start">
+                <div className="flex flex-col items-start gap-4 sm:flex-row">
                   <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden">
                     {activity.image ? (
                       <img src={activity.image} alt={activity.title} className="w-full h-full object-contain" />
@@ -581,7 +581,7 @@ const Index = () => {
                       </div>
                     )}
                   </div>
-                  <div className="flex-1 space-y-2">
+                  <div className="min-w-0 flex-1 space-y-2">
                     <div>
                       <h3 className="text-2xl font-serif font-semibold">{activity.title}</h3>
                       <p className={index === 0 ? "text-accent font-medium" : "text-muted-foreground font-medium"}>{activity.organization}</p>
@@ -725,10 +725,10 @@ const Index = () => {
   };
 
   return (
-    <div className="h-screen overflow-y-auto bg-background min-h-screen flex flex-col">
+    <div className="min-h-dvh overflow-y-auto bg-background flex flex-col md:h-dvh md:overflow-hidden">
       <header className="border-b flex-shrink-0 border-border bg-card/70 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 md:py-6">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 md:py-3 lg:py-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
             <div className="flex items-center gap-4 md:gap-6">
               <div className="relative h-16 w-16 overflow-hidden rounded-full border border-border shadow-md">
                 <img
@@ -739,17 +739,17 @@ const Index = () => {
                 />
               </div>
               <div className="space-y-1">
-                <h1 className="text-3xl font-serif font-bold text-foreground">Kayne Lee</h1>
-                <p className="text-muted-foreground max-w-xl">
+                <h1 className="text-2xl font-serif font-bold text-foreground md:text-3xl">Kayne Lee</h1>
+                <p className="max-w-xl text-sm text-muted-foreground md:text-base">
                   Software Developer Intern @ IBM <br />
                   Computer Engineering @ Queen's University
                 </p>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-3 text-sm font-medium text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-muted-foreground sm:text-sm">
               <a
                 href="mailto:kayne.lee2@outlook.com"
-                className="rounded-full border border-border px-4 py-2 transition-all duration-300 ease-out hover:border-accent hover:text-foreground"
+                className="break-all rounded-full border border-border px-4 py-2 transition-all duration-300 ease-out hover:border-accent hover:text-foreground"
               >
                 kayne.lee2@outlook.com
               </a>
@@ -757,7 +757,7 @@ const Index = () => {
                 href="https://www.linkedin.com/in/kaynelee"
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full border border-border px-4 py-2 transition-all duration-300 ease-out hover:border-accent hover:text-foreground"
+                className="break-all rounded-full border border-border px-4 py-2 transition-all duration-300 ease-out hover:border-accent hover:text-foreground"
               >
                 linkedin.com/in/kaynelee
               </a>
@@ -765,7 +765,7 @@ const Index = () => {
                 href="https://github.com/kayne-lee"
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full border border-border px-4 py-2 transition-all duration-300 ease-out hover:border-accent hover:text-foreground"
+                className="break-all rounded-full border border-border px-4 py-2 transition-all duration-300 ease-out hover:border-accent hover:text-foreground"
               >
                 github.com/kayne-lee
               </a>
@@ -774,14 +774,14 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="flex-1 flex-shrink-0">
-        <div className="max-w-7xl mx-auto h-full px-6 md:px-8 py-10">
+      <main className="flex-1 md:min-h-0">
+        <div className="w-full max-w-7xl mx-auto px-4 py-3 sm:px-5 md:h-full md:px-6 md:py-4 lg:px-8 lg:py-5">
           <div
             ref={gridRef}
-            className="relative h-full overflow-hidden rounded-3xl border border-border bg-card/60 p-3 md:p-6 shadow-lg"
+            className="relative overflow-hidden rounded-3xl border border-border bg-card/60 p-3 shadow-lg md:h-full md:p-4 lg:p-5"
           >
             <div
-              className={`grid h-full gap-3 md:gap-4 lg:gap-5 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr transition-all duration-500 ease-out ${
+              className={`grid gap-3 sm:grid-cols-2 sm:gap-4 md:h-full md:grid-cols-3 md:auto-rows-fr transition-all duration-500 ease-out ${
                 visibleSection && !isClosing
                   ? "pointer-events-none scale-95 opacity-0"
                   : "pointer-events-auto scale-100 opacity-100"
@@ -813,7 +813,7 @@ const Index = () => {
                       cardRefs.current[section.id] = node;
                     }}
                     className={`transition-all duration-500 ease-out rounded-[24px] ${
-                      section.id === "experience" || section.id === "extracurriculars" ? "md:col-span-2 lg:col-span-2" : ""
+                      section.id === "experience" || section.id === "extracurriculars" ? "sm:col-span-2" : ""
                     }`}
                   >
                     <SectionCard
@@ -832,7 +832,7 @@ const Index = () => {
 
             {visibleSection && overlayStyle && (
               <div
-                className={`absolute z-20 flex flex-col ${
+                className={`absolute z-20 flex min-h-0 flex-col ${
                   showContent ? 'bg-card backdrop-blur-sm shadow-2xl' : ''
                 } ${isClosing ? "pointer-events-none" : "pointer-events-auto"}`}
                 style={{
@@ -843,25 +843,25 @@ const Index = () => {
                   borderRadius: overlayRadius,
                   backgroundColor: showContent ? 'hsl(var(--card))' : 'transparent',
                   border: showContent ? '1px solid hsl(var(--border))' : 'none',
-                  padding: showContent ? '2rem' : '0',
+                  padding: showContent ? "clamp(0.875rem, 2vw, 2rem)" : "0",
                   transition: `top ${ANIMATION_DURATION_MS}ms cubic-bezier(0.4, 0, 0.2, 1), left ${ANIMATION_DURATION_MS}ms cubic-bezier(0.4, 0, 0.2, 1), width ${ANIMATION_DURATION_MS}ms cubic-bezier(0.4, 0, 0.2, 1), height ${ANIMATION_DURATION_MS}ms cubic-bezier(0.4, 0, 0.2, 1), border-radius ${ANIMATION_DURATION_MS}ms cubic-bezier(0.4, 0, 0.2, 1), background-color 200ms, border 200ms, padding 200ms`,
                 }}
               >
                 {/* Only show content when expanded (not at card size) */}
                 {showContent && (
                   <>
-                    <div className="flex items-start justify-between gap-6 mb-6">
-                      <div className="flex items-start gap-4">
+                    <div className="mb-6 flex flex-wrap items-start justify-between gap-3 md:gap-6">
+                      <div className="flex min-w-0 items-start gap-4">
                         {SectionIcon && (
                           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/10 text-accent shadow-sm">
                             <SectionIcon className="h-7 w-7 md:h-8 md:w-8" />
                           </div>
                         )}
-                        <div className="space-y-2">
+                        <div className="min-w-0 space-y-2">
                           <p className="text-sm uppercase tracking-wide text-muted-foreground">
                             {currentSection?.metricLabel}
                           </p>
-                          <h2 className="text-3xl font-serif font-semibold text-foreground">
+                          <h2 className="text-xl font-serif font-semibold text-foreground sm:text-2xl md:text-3xl">
                             {currentSection?.title}
                           </h2>
                         </div>
@@ -875,7 +875,7 @@ const Index = () => {
                         <X className="h-5 w-5" />
                       </button>
                     </div>
-                    <div className="overflow-y-auto pr-2 text-foreground flex-1">
+                    <div className="flex-1 min-h-0 overflow-y-auto pr-1 text-foreground sm:pr-2">
                       {renderSectionContent(visibleSection)}
                     </div>
                   </>
