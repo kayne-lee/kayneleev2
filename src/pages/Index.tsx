@@ -30,24 +30,33 @@ const sectionData = {
   experience: [
     {
       id: 1,
-      title: "Software Developer Intern",
-      company: "IBM",
-      period: "September 2025 - Present",
-      description: "Scaled an agentic AI platform to over five thousand users by orchestrating complex pipelines with LangChain and implementing dual-mode retrieval using both vector and keyword search on Elasticsearch. This significantly improved response speed and increased the relevance of answers returned to users. To ensure stability and reliable deployments, I built a multi-layer end-to-end testing suite that covered the frontend, backend, and LLM response quality while also introducing a robust staging CI/CD pipeline with gated validation. This created a safer release process and improved overall product quality.",
-      image: '/ibm.png', // Add image path here
+      title: "Applied ML Engineer Intern",
+      company: "Microsoft",
+      period: "May 2026 - Present",
+      description: "Based in Redmond, Washington, researching SHAP explainability for machine learning models, evaluating permutation SHAP against architecture-specific methods for faithfulness, stability, and production latency. Built evaluation harnesses for model explainability agents, using insertion/deletion tests to validate feature attributions across payment decisions. Developed trustworthy agent signals that surface recent model accuracy, precision, and recall for human review of high-risk payment predictions.",
+      image: '/ms.png',
       highlights: []
     },
     {
       id: 2,
-      title: "Software Engineer",
-      company: "AdvisorScore",
-      period: "March 2025 - Present",
-      description: "Improved performance by re-architecting a full stack advisor grading application into AWS Lambda microservices, which reduced load times by eighty percent and created a noticeably smoother user experience with faster report generation. I also normalized more than fifteen thousand holdings using semantic search to disambiguate fund names and enforced structured outputs with LangGraph schemas, backed by staging CI/CD tests. This resulted in highly accurate, schema valid reports and a more reliable data pipeline.",
-      image: '/as.png',
+      title: "Software Engineer Intern",
+      company: "IBM",
+      period: "September 2025 - April 2026",
+      description: "Engineered an enterprise agentic AI platform in Markham, ON using LangGraph, hybrid retrieval, and protocol-based tool routing to support 5,000+ internal users. Enabled the A2A protocol between specialized agents, allowing them to share context, delegate tasks, and coordinate multi-step workflows across enterprise systems. Built failure-mode detection, safe fallback routing, and latency tests for distributed agent workflows, reducing critical errors by 23% while improving reliability.",
+      image: '/ibm.png',
       highlights: []
     },
     {
       id: 3,
+      title: "Founding Engineer",
+      company: "AdvisorScore",
+      period: "March 2025 - December 2025",
+      description: "Built a Qdrant-powered semantic retrieval layer to normalize and match messy holding names to canonical entities, improving downstream scoring accuracy for a financial commerce product. Developed risk and benchmark comparison logic that transforms raw data into decision-ready scores and insights. Automated AWS Lambda ingestion and scoring pipelines, cutting manual work by 60% while improving throughput.",
+      image: '/as.png',
+      highlights: []
+    },
+    {
+      id: 4,
       title: "Software Engineer Intern",
       company: "SafetyPower",
       period: "May 2025 - August 2025",
@@ -56,7 +65,7 @@ const sectionData = {
       highlights: []
     },
     {
-      id: 4,
+      id: 5,
       title: "Software Engineer Intern",
       company: "STraffic America",
       period: "May 2024 - August 2024",
@@ -94,8 +103,8 @@ const sectionData = {
     {
       id: 4,
       title: "NumerAI Model",
-      description: "Developped a ML model to participate in the NumerAI tournament to trade crypto currencies. Currently have a 12% profit and ranked top 25 in the season. Used NumerAI's API to parse and organize the data and then used a LightGBM model to process the data given by NumerAI.",
-      tech: ["Python", "LightGBM", "NumerAI"],
+      description: "Built a Numerai trading pipeline that ranked Top 20 in North America over 3 months, generating roughly 60% returns. Used Numerai's API to parse and organize the data, then trained a LightGBM model with era-based validation to improve robustness and reduce overfitting under shifting market regimes.",
+      tech: ["Python", "LightGBM", "scikit-learn", "NumerAI"],
       link: "github.com/kayne-lee/NumerAI-Model",
       image: 'nm.png'
     }
@@ -131,14 +140,20 @@ const sectionData = {
       description: "Dedicated to maintaining a healthy lifestyle through regular gym sessions, weightlifting, and various fitness routines.",
       image: '/Workout.png'
     },
+    {
+      id: 6,
+      title: "Hiking",
+      description: "Love getting outdoors and exploring trails. Hiking is a great way to disconnect, take in some scenery, and reset.",
+      image: '/hiking.JPG'
+    },
   ],
   extracurriculars: [
     {
       id: 1,
-      title: "Director of Developers",
+      title: "Director of Developers, Senior Software Developer",
       organization: "QTMA",
-      period: "March 2025 - Present",
-      description: "Improved on-time delivery across 4 teams by instituting weekly planning, design/code reviews, and mentoring 10+ engineers, resulting in projects aligned with organizational goals.",
+      period: "March 2024 - Present",
+      description: "Led technical execution across 4 teams, mentoring 10+ engineers and driving architecture decisions. Standardized debugging, review, and delivery practices to improve consistency and overall quality across teams.",
       image: 'QTMA.png'
     },
     {
@@ -238,7 +253,7 @@ const Index = () => {
     {
       id: "experience",
       title: "Professional Experience",
-      metric: "4",
+      metric: "5",
       metricLabel: "Positions",
       icon: Briefcase,
       itemCount: sectionData.experience.length,
@@ -349,7 +364,7 @@ const Index = () => {
                   <h3 className="text-2xl font-serif font-semibold">B.S. Computer Engineering</h3>
                   <p className="text-accent font-medium">Queen's University</p>
                 </div>
-                <span className="text-muted-foreground">September 2022 - April 2027</span>
+                <span className="text-muted-foreground">September 2022 - December 2027</span>
               </div>
               <div className="space-y-2 mt-4">
                 <p className="font-medium">Relevant Coursework:</p>
@@ -415,36 +430,31 @@ const Index = () => {
         // Technology slugs for Simple Icons (SimpleIcon slug format)
         const techSlugs = [
           // Languages
+          "python",
           "c",
           "cplusplus",
-          "css3",
-          "html5",
+          "csharp",
           "java",
           "javascript",
-          "python",
-          "ruby",
-          "sqlite",
           "typescript",
+          "ruby",
           // Frameworks
-          "django",
           "fastapi",
-          "flask",
-          "nextdotjs",
-          "nodedotjs",
-          "php",
+          "django",
           "react",
-          "rubyonrails",
-          "spring",
+          "nextdotjs",
+          "springboot",
+          "nodedotjs",
+          "dotnet",
+          "pytorch",
+          "langchain",
           // Developer Tools
           "amazonaws",
           "microsoftazure",
           "git",
-          "apachehadoop",
-          "mongodb",
           "postgresql",
-          "powerbi",
-          "tableau",
-          "visualstudio",
+          "mongodb",
+          "elasticsearch",
           "docker",
           "kubernetes",
         ];
@@ -741,7 +751,7 @@ const Index = () => {
               <div className="space-y-1">
                 <h1 className="text-2xl font-serif font-bold text-foreground md:text-3xl">Kayne Lee</h1>
                 <p className="max-w-xl text-sm text-muted-foreground md:text-base">
-                  Software Developer Intern @ IBM <br />
+                  Applied ML Engineer Intern @ Microsoft <br />
                   Computer Engineering @ Queen's University
                 </p>
               </div>
