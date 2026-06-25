@@ -18,11 +18,11 @@ export const SectionCard = ({ title, metric, metricLabel, icon, itemCount, image
   return (
     <Card
       onClick={onClick}
-      className="group relative h-full overflow-hidden cursor-pointer transition-smooth hover:shadow-lg hover:-translate-y-1 border-border bg-card rounded-[24px]"
+      className="block-3d group relative h-full cursor-pointer border border-border bg-card rounded-[24px]"
     >
-      <div className="flex h-full flex-col p-4 md:p-4 lg:p-5 xl:p-6">
+      <div className="flex h-full flex-col p-5 md:p-6 lg:p-7">
         <div className="mb-4 flex items-start justify-between md:mb-5">
-          <div className="text-accent transition-smooth group-hover:scale-110">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/15 text-accent shadow-[inset_0_1px_0_0_hsl(0_0%_100%/0.18),0_8px_16px_-8px_hsl(var(--accent)/0.55)] transition-smooth group-hover:-translate-y-0.5 group-hover:scale-105 md:h-12 md:w-12">
             <Icon className="h-6 w-6 md:h-7 md:w-7" />
           </div>
           
@@ -50,10 +50,10 @@ export const SectionCard = ({ title, metric, metricLabel, icon, itemCount, image
           </div>
         </div>
         
-        <h2 className="mb-2 text-lg font-serif font-semibold text-foreground md:text-xl xl:text-2xl">
+        <h2 className="mb-2 mt-auto text-lg font-serif font-semibold text-foreground md:text-xl xl:text-2xl">
           {title}
         </h2>
-        
+
         <div className="space-y-1">
           <div className="text-2xl font-serif font-bold text-primary md:text-3xl xl:text-4xl">
             {metric}
@@ -63,8 +63,6 @@ export const SectionCard = ({ title, metric, metricLabel, icon, itemCount, image
           </p>
         </div>
       </div>
-      
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-accent transform scale-x-0 group-hover:scale-x-100 transition-smooth origin-left" />
     </Card>
   );
 };

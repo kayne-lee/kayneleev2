@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Briefcase, GraduationCap, Code, Wrench, Heart, X, Calendar, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { SectionCard } from "@/components/SectionCard";
-import IconCloud from "@/components/IconCloud";
+import TechStack from "@/components/TechStack";
 
 type Section = "experience" | "education" | "projects" | "techstack" | "hobbies" | "current" | "extracurriculars" | null;
 type ConcreteSection = Exclude<Section, null>;
@@ -328,17 +328,16 @@ const Index = () => {
     switch (section) {
       case "experience":
         return (
-          <div className="space-y-6">
+          <div className="space-y-5">
             {sectionData.experience.map((job, index) => (
-              <div key={job.id} className={`border-l-2 ${index === 0 ? 'border-accent' : 'border-muted'} pl-6 space-y-2`}>
+              <div key={job.id} className="clay-card relative overflow-hidden p-5">
+                {index === 0 && <span className="absolute left-0 top-0 h-full w-1 bg-accent" />}
                 <div className="flex flex-col items-start gap-4 sm:flex-row">
-                  <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden">
+                  <div className="flex-shrink-0 w-20 h-20 rounded-2xl bg-secondary overflow-hidden flex items-center justify-center">
                     {job.image ? (
-                      <img src={job.image} alt={job.title} className="w-full h-full object-contain" />
+                      <img src={job.image} alt={job.title} className="w-full h-full object-contain p-2" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-2xl text-accent font-bold">{job.id}</span>
-                      </div>
+                      <span className="text-2xl text-accent font-bold">{job.id}</span>
                     )}
                   </div>
                   <div className="min-w-0 flex-1 space-y-2">
@@ -357,8 +356,9 @@ const Index = () => {
 
       case "education":
         return (
-          <div className="space-y-8">
-            <div className="border-l-2 border-accent pl-6 space-y-2">
+          <div className="space-y-6">
+            <div className="clay-card relative overflow-hidden p-6 space-y-2">
+              <span className="absolute left-0 top-0 h-full w-1 bg-accent" />
               <div className="flex flex-col items-start gap-2 sm:flex-row sm:justify-between">
                 <div>
                   <h3 className="text-2xl font-serif font-semibold">B.S. Computer Engineering</h3>
@@ -380,7 +380,7 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="border-l-2 border-muted pl-6 space-y-2">
+            <div className="clay-card p-6 space-y-2">
               <h3 className="text-xl font-serif font-semibold">Honors & Awards</h3>
               <ul className="space-y-2 text-muted-foreground">
                 <li>• Queen’s University Excellence Scholarship</li>
@@ -395,15 +395,13 @@ const Index = () => {
         return (
           <div className="grid gap-6">
             {sectionData.projects.map((project) => (
-              <div key={project.id} className="border border-border rounded-lg p-6 hover:border-accent transition-smooth">
+              <div key={project.id} className="clay-card p-6">
                 <div className="flex flex-col items-start gap-4 sm:flex-row">
-                  <div className="flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden">
+                  <div className="flex-shrink-0 w-24 h-24 rounded-2xl bg-secondary overflow-hidden flex items-center justify-center">
                     {project.image ? (
-                      <img src={project.image} alt={project.title} className="w-full h-full object-contain" />
+                      <img src={project.image} alt={project.title} className="w-full h-full object-contain p-2" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-3xl text-accent font-bold">{project.id}</span>
-                      </div>
+                      <span className="text-3xl text-accent font-bold">{project.id}</span>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -427,57 +425,19 @@ const Index = () => {
         );
 
       case "techstack":
-        // Technology slugs for Simple Icons (SimpleIcon slug format)
-        const techSlugs = [
-          // Languages
-          "python",
-          "c",
-          "cplusplus",
-          "csharp",
-          "java",
-          "javascript",
-          "typescript",
-          "ruby",
-          // Frameworks
-          "fastapi",
-          "django",
-          "react",
-          "nextdotjs",
-          "springboot",
-          "nodedotjs",
-          "dotnet",
-          "pytorch",
-          "langchain",
-          // Developer Tools
-          "amazonaws",
-          "microsoftazure",
-          "git",
-          "postgresql",
-          "mongodb",
-          "elasticsearch",
-          "docker",
-          "kubernetes",
-        ];
-
-        return (
-          <div className="h-[280px] w-full overflow-hidden rounded-lg sm:h-[360px] md:h-[420px] lg:h-[520px] xl:h-[600px]">
-            <IconCloud iconSlugs={techSlugs} />
-          </div>
-        );
+        return <TechStack />;
 
       case "hobbies":
         return (
           <div className="grid md:grid-cols-2 gap-6">
             {sectionData.hobbies.map((hobby) => (
-              <div key={hobby.id} className="border border-border rounded-lg p-6 hover:border-accent transition-smooth">
+              <div key={hobby.id} className="clay-card p-6">
                 <div className="flex flex-col items-start gap-3 sm:flex-row">
-                  <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden">
+                  <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-secondary overflow-hidden flex items-center justify-center">
                     {hobby.image ? (
                       <img src={hobby.image} alt={hobby.title} className="w-full h-full object-contain" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-2xl text-accent font-bold">{hobby.id}</span>
-                      </div>
+                      <span className="text-2xl text-accent font-bold">{hobby.id}</span>
                     )}
                   </div>
                   <div className="min-w-0">
@@ -498,7 +458,8 @@ const Index = () => {
               <h3 className="text-2xl font-serif font-semibold mb-4">Active Projects</h3>
               <div className="space-y-4">
                 {sectionData.current.projects.map((project, index) => (
-                  <div key={project.id} className={`border-l-2 ${index === 0 ? 'border-accent' : 'border-muted'} pl-4 space-y-2`}>
+                  <div key={project.id} className="clay-card relative overflow-hidden p-4 space-y-2">
+                    {index === 0 && <span className="absolute left-0 top-0 h-full w-1 bg-accent" />}
                     <h4 className="text-xl font-medium">{project.title}</h4>
                     <p className="text-muted-foreground">{project.description}</p>
                     <div className="flex flex-wrap gap-2">
@@ -516,7 +477,7 @@ const Index = () => {
               <h3 className="text-2xl font-serif font-semibold mb-4">Gym Progress</h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {sectionData.current.gymProgress.map((stat, index) => (
-                  <div key={index} className="border border-border rounded-lg p-4">
+                  <div key={index} className="clay-card p-4">
                     <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
                     <p className="text-2xl font-bold text-accent">{stat.value}</p>
                   </div>
@@ -531,9 +492,9 @@ const Index = () => {
                 {sectionData.current.books.map((book, index) => (
                   <div key={book.id} className="flex flex-col items-start gap-4 sm:flex-row">
                     {book.image ? (
-                      <img src={book.image} alt={book.title} className="w-16 h-24 object-contain rounded bg-accent/10" />
+                      <img src={book.image} alt={book.title} className="w-16 h-24 object-contain rounded-2xl bg-secondary p-1" />
                     ) : (
-                      <div className="flex-shrink-0 w-16 h-24 bg-gradient-to-br from-accent/20 to-accent/40 rounded"></div>
+                      <div className="flex-shrink-0 w-16 h-24 bg-gradient-to-br from-accent/20 to-accent/40 rounded-2xl"></div>
                     )}
                     <div className="min-w-0">
                       <h4 className="text-lg font-medium">"{book.title}" by {book.author}</h4>
@@ -555,7 +516,7 @@ const Index = () => {
                     href={song.link} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="block border border-border rounded-lg p-4 hover:border-accent transition-smooth group"
+                    className="clay-card block p-4 group"
                   >
                     <p className="text-base font-medium group-hover:text-accent">{song.title}</p>
                     <p className="text-sm text-muted-foreground">{song.artist}</p>
@@ -580,15 +541,14 @@ const Index = () => {
         return (
           <div className="space-y-6">
             {sectionData.extracurriculars.map((activity, index) => (
-              <div key={activity.id} className={`border-l-2 ${index === 0 ? 'border-accent' : 'border-muted'} pl-6 space-y-2`}>
+              <div key={activity.id} className="clay-card relative overflow-hidden p-5">
+                {index === 0 && <span className="absolute left-0 top-0 h-full w-1 bg-accent" />}
                 <div className="flex flex-col items-start gap-4 sm:flex-row">
-                  <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden">
+                  <div className="flex-shrink-0 w-20 h-20 rounded-2xl bg-secondary overflow-hidden flex items-center justify-center">
                     {activity.image ? (
-                      <img src={activity.image} alt={activity.title} className="w-full h-full object-contain" />
+                      <img src={activity.image} alt={activity.title} className="w-full h-full object-contain p-2" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-2xl text-accent font-bold">{activity.id}</span>
-                      </div>
+                      <span className="text-2xl text-accent font-bold">{activity.id}</span>
                     )}
                   </div>
                   <div className="min-w-0 flex-1 space-y-2">
@@ -785,13 +745,13 @@ const Index = () => {
       </header>
 
       <main className="flex-1 md:min-h-0">
-        <div className="w-full max-w-7xl mx-auto px-4 py-3 sm:px-5 md:h-full md:px-6 md:py-4 lg:px-8 lg:py-5">
+        <div className="w-full max-w-7xl mx-auto px-6 py-5 sm:px-7 md:h-full md:px-8 md:py-6 lg:px-10 lg:py-7">
           <div
             ref={gridRef}
-            className="relative overflow-hidden rounded-3xl border border-border bg-card/60 p-3 shadow-lg md:h-full md:p-4 lg:p-5"
+            className="relative overflow-hidden rounded-3xl border border-border bg-card/60 p-6 shadow-lg md:h-full md:p-8 lg:p-9"
           >
             <div
-              className={`grid gap-3 sm:grid-cols-2 sm:gap-4 md:h-full md:grid-cols-3 md:auto-rows-fr transition-all duration-500 ease-out ${
+              className={`grid gap-4 sm:grid-cols-2 sm:gap-5 md:h-full md:grid-cols-3 md:auto-rows-fr lg:gap-6 transition-all duration-500 ease-out ${
                 visibleSection && !isClosing
                   ? "pointer-events-none scale-95 opacity-0"
                   : "pointer-events-auto scale-100 opacity-100"
