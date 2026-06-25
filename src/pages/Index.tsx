@@ -333,7 +333,7 @@ const Index = () => {
               <div key={job.id} className="clay-card relative overflow-hidden p-5">
                 {index === 0 && <span className="absolute left-0 top-0 h-full w-1 bg-accent" />}
                 <div className="flex flex-col items-start gap-4 sm:flex-row">
-                  <div className="flex-shrink-0 w-20 h-20 rounded-2xl bg-secondary overflow-hidden flex items-center justify-center">
+                  <div className="flex-shrink-0 w-20 h-20 rounded-2xl bg-white overflow-hidden flex items-center justify-center">
                     {job.image ? (
                       <img src={job.image} alt={job.title} className="w-full h-full object-contain p-2" />
                     ) : (
@@ -397,7 +397,7 @@ const Index = () => {
             {sectionData.projects.map((project) => (
               <div key={project.id} className="clay-card p-6">
                 <div className="flex flex-col items-start gap-4 sm:flex-row">
-                  <div className="flex-shrink-0 w-24 h-24 rounded-2xl bg-secondary overflow-hidden flex items-center justify-center">
+                  <div className="flex-shrink-0 w-24 h-24 rounded-2xl bg-white overflow-hidden flex items-center justify-center">
                     {project.image ? (
                       <img src={project.image} alt={project.title} className="w-full h-full object-contain p-2" />
                     ) : (
@@ -544,7 +544,7 @@ const Index = () => {
               <div key={activity.id} className="clay-card relative overflow-hidden p-5">
                 {index === 0 && <span className="absolute left-0 top-0 h-full w-1 bg-accent" />}
                 <div className="flex flex-col items-start gap-4 sm:flex-row">
-                  <div className="flex-shrink-0 w-20 h-20 rounded-2xl bg-secondary overflow-hidden flex items-center justify-center">
+                  <div className="flex-shrink-0 w-20 h-20 rounded-2xl bg-white overflow-hidden flex items-center justify-center">
                     {activity.image ? (
                       <img src={activity.image} alt={activity.title} className="w-full h-full object-contain p-2" />
                     ) : (
@@ -782,7 +782,7 @@ const Index = () => {
                     ref={(node) => {
                       cardRefs.current[section.id] = node;
                     }}
-                    className={`transition-all duration-500 ease-out rounded-[24px] ${
+                    className={`transition-all duration-500 ease-out rounded-[28px] ${
                       section.id === "experience" || section.id === "extracurriculars" ? "sm:col-span-2" : ""
                     }`}
                   >

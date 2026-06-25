@@ -15,15 +15,24 @@ export const SectionCard = ({ title, metric, metricLabel, icon, itemCount, image
   const Icon = icon;
   const imageCount = images ? Math.min(images.length, 5) : Math.min(itemCount, 5);
 
+  // Adaptive metric sizing: big punchy numbers, smaller for long phrases so
+  // the text always fits inside the fixed-height tile.
+  const metricSizeClass =
+    metric.length <= 4
+      ? "text-2xl md:text-3xl"
+      : metric.length <= 9
+        ? "text-xl md:text-2xl"
+        : "text-base md:text-lg";
+
   return (
     <Card
       onClick={onClick}
-      className="block-3d group relative h-full cursor-pointer border border-border bg-card rounded-[24px]"
+      className="block-3d group relative h-full cursor-pointer border border-border bg-card rounded-[28px]"
     >
-      <div className="flex h-full flex-col p-5 md:p-6 lg:p-7">
-        <div className="mb-4 flex items-start justify-between md:mb-5">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/15 text-accent shadow-[inset_0_1px_0_0_hsl(0_0%_100%/0.18),0_8px_16px_-8px_hsl(var(--accent)/0.55)] transition-smooth group-hover:-translate-y-0.5 group-hover:scale-105 md:h-12 md:w-12">
-            <Icon className="h-6 w-6 md:h-7 md:w-7" />
+      <div className="flex h-full min-h-0 flex-col overflow-hidden p-4 md:p-5 lg:p-6">
+        <div className="mb-2 flex items-start justify-between md:mb-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent/15 text-accent shadow-[inset_0_1px_0_0_hsl(0_0%_100%/0.18),0_8px_16px_-8px_hsl(var(--accent)/0.55)] transition-smooth group-hover:-translate-y-0.5 group-hover:scale-105 md:h-11 md:w-11">
+            <Icon className="h-5 w-5 md:h-6 md:w-6" />
           </div>
           
           {/* Cascaded Images */}
@@ -50,15 +59,15 @@ export const SectionCard = ({ title, metric, metricLabel, icon, itemCount, image
           </div>
         </div>
         
-        <h2 className="mb-2 mt-auto text-lg font-serif font-semibold text-foreground md:text-xl xl:text-2xl">
+        <h2 className="mb-1 mt-auto text-base font-serif font-semibold leading-tight text-foreground md:text-lg xl:text-xl">
           {title}
         </h2>
 
-        <div className="space-y-1">
-          <div className="text-2xl font-serif font-bold text-primary md:text-3xl xl:text-4xl">
+        <div className="min-w-0 space-y-0.5">
+          <div className={`font-serif font-bold leading-tight break-words text-primary ${metricSizeClass}`}>
             {metric}
           </div>
-          <p className="text-sm text-muted-foreground uppercase tracking-wide">
+          <p className="text-xs leading-tight text-muted-foreground uppercase tracking-wide">
             {metricLabel}
           </p>
         </div>
