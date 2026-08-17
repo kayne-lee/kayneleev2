@@ -1,859 +1,429 @@
-import { useEffect, useRef, useState } from "react";
-import { Briefcase, GraduationCap, Code, Wrench, Heart, X, Calendar, Users } from "lucide-react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { Briefcase, Calendar, Code, GraduationCap, Heart, Users, Wrench, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+
+import { DashboardHeader } from "@/components/DashboardHeader";
 import { SectionCard } from "@/components/SectionCard";
+import { GlassPane } from "@/components/glass/GlassPane";
 import TechStack from "@/components/TechStack";
 
-type Section = "experience" | "education" | "projects" | "techstack" | "hobbies" | "current" | "extracurriculars" | null;
-type ConcreteSection = Exclude<Section, null>;
+import { EducationSection } from "@/components/sections/EducationSection";
+import { ExperienceSection } from "@/components/sections/ExperienceSection";
+import { ExtracurricularsSection } from "@/components/sections/ExtracurricularsSection";
+import { HobbiesSection } from "@/components/sections/HobbiesSection";
+import { NowSection } from "@/components/sections/NowSection";
+import { ProjectsSection } from "@/components/sections/ProjectsSection";
+import {
+  EducationPreview,
+  ExperiencePreview,
+  ExtracurricularsPreview,
+  HobbiesPreview,
+  NowPreview,
+  ProjectsPreview,
+  TechStackPreview,
+} from "@/components/tiles/TilePreviews";
+
+import { experience, extracurriculars, hobbies, projects } from "@/data/portfolio";
+
+type SectionId =
+  | "experience"
+  | "education"
+  | "projects"
+  | "techstack"
+  | "hobbies"
+  | "current"
+  | "extracurriculars";
+
 type SectionDefinition = {
-  id: ConcreteSection;
+  id: SectionId;
+  /** Mono label on the tile. Carries the count, so it does real work. */
+  eyebrow: string;
   title: string;
-  metric: string;
-  metricLabel: string;
   icon: LucideIcon;
-  itemCount: number;
+  /** Grid placement. 4x3 at lg, 3x4 at md, 2-col at sm, stacked below. */
+  area: string;
+  /** Reading measure for the opened panel — prose narrows, grids spread. */
+  measure: string;
+  preview: ReactNode;
+  body: ReactNode;
 };
 
-type OverlayRect = {
-  top: number;
-  left: number;
-  width: number;
-  height: number;
-};
+const CONTAINER_RADIUS = 26;
 
-const CONTAINER_RADIUS = 24;
-const ANIMATION_DURATION_MS = 450;
+/* Choreography. The old version waited for the morph to finish before even
+   starting the content fade, so a section took ~800ms to become readable and
+   the two halves felt like separate events. Now they overlap: content begins
+   arriving while the pane is still growing, and on close it leaves while the
+   pane is still shrinking. */
+const OPEN_MS = 460; // pane grows
+const CONTENT_IN_AT = 60; // content starts arriving, almost immediately
+const CLOSE_MS = 400; // pane shrinks
+/* Closing mirrors opening rather than reversing the old two-step. The content
+   holds still and full-strength while the shrinking pane clips it away from
+   the edges in; it only fades over the last stretch, once there is little
+   left to see. Fading it up front is what made the close read as an empty
+   white box collapsing. */
+const CONTENT_OUT_MS = 280;
+const CONTENT_OUT_DELAY = 120; // 120 + 280 == CLOSE_MS, so both land together
 
-// Database for section content
-const sectionData = {
-  experience: [
-    {
-      id: 1,
-      title: "Applied ML Engineer Intern",
-      company: "Microsoft",
-      period: "May 2026 - Present",
-      description: "Based in Redmond, Washington, researching SHAP explainability for machine learning models, evaluating permutation SHAP against architecture-specific methods for faithfulness, stability, and production latency. Built evaluation harnesses for model explainability agents, using insertion/deletion tests to validate feature attributions across payment decisions. Developed trustworthy agent signals that surface recent model accuracy, precision, and recall for human review of high-risk payment predictions.",
-      image: '/ms.png',
-      highlights: []
-    },
-    {
-      id: 2,
-      title: "Software Engineer Intern",
-      company: "IBM",
-      period: "September 2025 - April 2026",
-      description: "Engineered an enterprise agentic AI platform in Markham, ON using LangGraph, hybrid retrieval, and protocol-based tool routing to support 5,000+ internal users. Enabled the A2A protocol between specialized agents, allowing them to share context, delegate tasks, and coordinate multi-step workflows across enterprise systems. Built failure-mode detection, safe fallback routing, and latency tests for distributed agent workflows, reducing critical errors by 23% while improving reliability.",
-      image: '/ibm.png',
-      highlights: []
-    },
-    {
-      id: 3,
-      title: "Founding Engineer",
-      company: "AdvisorScore",
-      period: "March 2025 - December 2025",
-      description: "Built a Qdrant-powered semantic retrieval layer to normalize and match messy holding names to canonical entities, improving downstream scoring accuracy for a financial commerce product. Developed risk and benchmark comparison logic that transforms raw data into decision-ready scores and insights. Automated AWS Lambda ingestion and scoring pipelines, cutting manual work by 60% while improving throughput.",
-      image: '/as.png',
-      highlights: []
-    },
-    {
-      id: 4,
-      title: "Software Engineer Intern",
-      company: "SafetyPower",
-      period: "May 2025 - August 2025",
-      description: "Reduced project tracking time by half by launching a Django MVC system that supported more than one hundred and fifty active projects through Dockerized Linux deployments, creating a reliable and scalable foundation for operations. I also rolled out an internal LLM and RAG portal to over two hundred employees with curated indexing and access controls, which made finding the right information much faster and led to a major improvement in team decision making. This helped shorten knowledge lookup time by seventy percent and created smoother collaboration across different groups.",
-      image: '/sp.jpg',
-      highlights: []
-    },
-    {
-      id: 5,
-      title: "Software Engineer Intern",
-      company: "STraffic America",
-      period: "May 2024 - August 2024",
-      description: "Achieved a detection accuracy of ninety seven percent was achieved on over three hundred thousand images by training and calibrating YOLOv10X across San Francisco and Washington, D.C. camera feeds, enabling a ten million dollar revenue recovery pipeline. Iteration speed was accelerated through the orchestration of a complete vision ETL process covering ingestion, cleaning, normalization, annotation, and augmentation, which resulted in fully automated retraining workflows and faster model improvement cycles.",
-      image: '/st.png',
-      highlights: []
-    },
+const pad = (n: number) => String(n).padStart(2, "0");
 
-  ],
-  projects: [
-    {
-      id: 1,
-      title: "Nucleus: The All-in-One Student Productivity Hub",
-      description: "Built by students for students. Nucleus parses syllabi to pull key dates and deliverables, auto-generates a weekly task view, lets you add custom task tiles, syncs deadlines to your calendar, and tracks grades with what-if scenarios. React frontend talks to a Spring Boot API and a Node email service, packaged with Docker and secured with JWT.",
-      tech: ["React", "Spring Boot", "Java 17", "Node.js", "SMTP", "PostgreSQL", "Docker", "JWT"],
-      link: "github.com/kayne-lee/nucleusapp",
-      image: 'nucleus.png'
-    },
-    {
-      id: 2,
-      title: "Computer Vision Keyboard",
-      description: "Developed a Python application using OpenCV and MediaPipe that enables hands-free typing by recognizing hand gestures through a webcam. Integrated a virtual keyboard with predictive text and auto-correction, achieving 95% gesture accuracy and a 30% increase in typing speed for users with limited mobility. The system supports customizable layouts, gesture sensitivity, and multiple languages for a responsive and accessible user experience.",
-      tech: ["Python", "OpenCV", "MediaPipe"],
-      link: "github.com/kayne-lee/Computer-Vision-Keyboard",
-      image: 'cv.png'
-    },
-    {
-      id: 3,
-      title: "Caption Generator",
-      description: "Developed a Next.js application that enables user-generated video uploads, integrating Amazon S3 for efficient storage and achieving a 50% reduction in server load and 20% faster upload speeds. Implemented a dynamic captioning feature using Amazon Transcribe, allowing users to personalize captions with adjustable fonts, colors, and positioning. The system provides a smooth video-to-text conversion pipeline with customizable styling options.",
-      tech: ["AWS", "Next.js", "S3", "Amazon Transcribe"],
-      link: "github.com/kayne-lee/Caption-Creator",
-      image: 'cg.png'
-    },
-    {
-      id: 4,
-      title: "NumerAI Model",
-      description: "Built a Numerai trading pipeline that ranked Top 20 in North America over 3 months, generating roughly 60% returns. Used Numerai's API to parse and organize the data, then trained a LightGBM model with era-based validation to improve robustness and reduce overfitting under shifting market regimes.",
-      tech: ["Python", "LightGBM", "scikit-learn", "NumerAI"],
-      link: "github.com/kayne-lee/NumerAI-Model",
-      image: 'nm.png'
-    }
-  ],
-  hobbies: [
-    {
-      id: 1,
-      title: "Football",
-      description: "Varsity High School Football Team",
-      image: '/Football.png'
-    },
-    {
-      id: 2,
-      title: "Hockey",
-      description: "Kincardine Minor Hockey Team & Guelph Gryphons Hockey Team",
-      image: '/Hockey.png'
-    },
-    {
-      id: 3,
-      title: "Skating",
-      description: "Love skateboarding and longboarding. It's a great way to stay active and cruise around the city.",
-      image: '/Skate.png'
-    },
-    {
-      id: 4,
-      title: "Shoe Collection",
-      description: "Love collecting shoes and adding new ones to my collection. It's a great way to express my style and personality. (Air Jordan 1 Obsidian's are my favorite)",
-      image: '/Shoe.png'
-    },
-    {
-      id: 5,
-      title: "Fitness & Working Out",
-      description: "Dedicated to maintaining a healthy lifestyle through regular gym sessions, weightlifting, and various fitness routines.",
-      image: '/Workout.png'
-    },
-    {
-      id: 6,
-      title: "Hiking",
-      description: "Love getting outdoors and exploring trails. Hiking is a great way to disconnect, take in some scenery, and reset.",
-      image: '/hiking.JPG'
-    },
-  ],
-  extracurriculars: [
-    {
-      id: 1,
-      title: "Director of Developers, Senior Software Developer",
-      organization: "QTMA",
-      period: "March 2024 - Present",
-      description: "Led technical execution across 4 teams, mentoring 10+ engineers and driving architecture decisions. Standardized debugging, review, and delivery practices to improve consistency and overall quality across teams.",
-      image: 'QTMA.png'
-    },
-    {
-      id: 2,
-      title: "Product Team",
-      organization: "QMIND",
-      period: "2023 - 2024",
-      description: "Engineered the QMIND.ca website. Implemented the front end using Next.js and backend system of Supabase to allow users to sign in with JWT authentication system and submit their projects for display on the website.",
-      image: 'QMIND.png'
-    },
-    {
-      id: 3,
-      title: "iCon",
-      organization: "iCons",
-      period: "2023 - 2025",
-      description: "Operated after ILC administration hours to keep the facility open to students promote a positive studying and learning atmosphere, and to act as a resource to undergraduate students for academic courses.",
-      image: 'ICONS.png'
-    },
-    
-  ],
-  current: {
-    projects: [
-      {
-        id: 1,
-        title: "Advisor Score",
-        description: "Working on deploying advisor score soon, then focusing on learning and studying more ML stuff.",
-        tech: ["AWS", "LangChain", "LLMs"],
-        image: null
-      },
-      {
-        id: 2,
-        title: "ML Learning",
-        description: "Diving deeper into machine learning concepts and building AI agents.",
-        tech: ["Python", "ML", "AI"],
-        image: null
-      }
-    ],
-    gymProgress: [
-      { label: "Current Split", value: "Upper, Lower, Chest/Back, Shoulders/Arms, Lower, Upper, Rest" },
-      { label: "Focus", value: "Progressive Overload" },
-      { label: "Goal", value: "Muscle Definition" },
-      { label: "Favourite Exercise", value: "Dumbell Incline Bench Press" }
-    ],
-    books: [
-      {
-        id: 1,
-        title: "Atomic Habits",
-        author: "James Clear",
-        description: "Building good habits and breaking bad ones.",
-        progress: 50,
-        image: 'ah.jpg'
-      },
-      {
-        id: 2,
-        title: "Principles of Building AI Agents",
-        author: "Sam Bhagwat",
-        description: "2nd edition by Sam Bhagwat, cofounder and CEO Mastra.ai. Deep dive into AI agent development.",
-        progress: 40,
-        image: 'aia.jpg'
-      }
-    ],
-    music: [
-      { title: "crushing", artist: "Sombr", link: "https://open.spotify.com/search/crushing%20sombr" },
-      { title: "Crazy", artist: "BUNT. and Myles Lloyd", link: "https://open.spotify.com/search/crazy%20bunt" }
-    ],
-    focusAreas: [
-      "Diving into Quantt",
-      "Finding new spots in Toronto",
-      "Experimenting with AI/ML tools",
-      "Building AI agents"
-    ]
+const SECTIONS: SectionDefinition[] = [
+  {
+    id: "experience",
+    eyebrow: `${pad(experience.length)} — Positions`,
+    title: "Experience",
+    icon: Briefcase,
+    area: "sm:col-span-2 lg:col-span-2 lg:row-span-2",
+    measure: "max-w-4xl",
+    preview: <ExperiencePreview />,
+    body: <ExperienceSection />,
+  },
+  {
+    id: "education",
+    eyebrow: "In progress",
+    title: "Education",
+    icon: GraduationCap,
+    area: "lg:col-start-3 lg:row-start-1",
+    measure: "max-w-4xl",
+    preview: <EducationPreview />,
+    body: <EducationSection />,
+  },
+  {
+    id: "techstack",
+    eyebrow: "Toolkit",
+    title: "Tech stack",
+    icon: Wrench,
+    area: "lg:col-start-4 lg:row-start-1 lg:row-span-2",
+    measure: "max-w-6xl",
+    preview: <TechStackPreview />,
+    body: <TechStack />,
+  },
+  {
+    id: "projects",
+    eyebrow: `${pad(projects.length)} — Shipped`,
+    title: "Projects",
+    icon: Code,
+    area: "lg:col-start-3 lg:row-start-2",
+    measure: "max-w-4xl",
+    preview: <ProjectsPreview />,
+    body: <ProjectsSection />,
+  },
+  {
+    id: "current",
+    eyebrow: "Right now",
+    title: "Current focus",
+    icon: Calendar,
+    area: "lg:col-start-1 lg:row-start-3",
+    measure: "max-w-6xl",
+    preview: <NowPreview />,
+    body: <NowSection />,
+  },
+  {
+    id: "extracurriculars",
+    eyebrow: `${pad(extracurriculars.length)} — Activities`,
+    title: "Extracurriculars",
+    icon: Users,
+    area: "lg:col-start-2 lg:row-start-3",
+    measure: "max-w-4xl",
+    preview: <ExtracurricularsPreview />,
+    body: <ExtracurricularsSection />,
+  },
+  {
+    id: "hobbies",
+    eyebrow: `${pad(hobbies.length)} — Off the clock`,
+    title: "Hobbies",
+    icon: Heart,
+    area: "sm:col-span-2 lg:col-span-2 lg:col-start-3 lg:row-start-3",
+    measure: "max-w-6xl",
+    preview: <HobbiesPreview />,
+    body: <HobbiesSection />,
+  },
+];
+
+/* The panel is CSS-positioned `inset: 0` — it always exactly covers the
+   frame, at any zoom or window size. The morph is a clip-path wipe from the
+   tile's rect out to the full frame, which means:
+     - no absolute pixel geometry is ever stored, so nothing can go stale when
+       the layout changes underneath it (browser zoom was leaving the panel
+       stranded at coordinates captured before the zoom);
+     - the content is laid out at full size from the first frame and never
+       reflows, so the glass reveals it rather than popping it in;
+     - closing re-measures the tile, so it always lands exactly where the tile
+       actually is now, not where it was when the panel opened. */
+const FULL_CLIP = `inset(0px round ${CONTAINER_RADIUS}px)`;
+
+/**
+ * A clip-path covering just this tile's rect within the frame.
+ *
+ * Deliberately uses layout offsets, not getBoundingClientRect. While a
+ * section is open the grid carries `scale(0.98)`, and getBoundingClientRect
+ * reports the *visually transformed* box — measured 14px left, 5px top and
+ * 14px narrow. Closing therefore animated to the wrong rect and the tile
+ * snapped into place when the grid un-scaled, which is the jump at the end of
+ * the close. offset* are layout values, so the transform cannot touch them.
+ */
+const insetForCard = (frame: HTMLElement | null, card: HTMLElement | null) => {
+  if (!frame || !card) return null;
+
+  // Accumulate up the offsetParent chain in case anything between the tile
+  // and the frame ever becomes positioned.
+  let top = 0;
+  let left = 0;
+  let node: HTMLElement | null = card;
+  while (node && node !== frame) {
+    top += node.offsetTop;
+    left += node.offsetLeft;
+    node = node.offsetParent as HTMLElement | null;
   }
+
+  // `inset: 0` resolves against the padding box, which is what client* report.
+  const right = Math.max(0, frame.clientWidth - left - card.offsetWidth);
+  const bottom = Math.max(0, frame.clientHeight - top - card.offsetHeight);
+  const radius = parseFloat(window.getComputedStyle(card).borderRadius) || CONTAINER_RADIUS;
+  return `inset(${top}px ${right}px ${bottom}px ${left}px round ${radius}px)`;
 };
 
 const Index = () => {
   const gridRef = useRef<HTMLDivElement>(null);
-  const animationFrameRef = useRef<number>();
   const closeTimeoutRef = useRef<number>();
-  const cardRefs = useRef<Record<ConcreteSection, HTMLDivElement | null>>({
-    experience: null,
-    education: null,
-    projects: null,
-    techstack: null,
-    hobbies: null,
-    current: null,
-    extracurriculars: null,
-  });
+  const contentTimeoutRef = useRef<number>();
+  const cardRefs = useRef<Partial<Record<SectionId, HTMLDivElement | null>>>({});
 
-  const [visibleSection, setVisibleSection] = useState<Section>(null);
+  const [visibleSection, setVisibleSection] = useState<SectionId | null>(null);
   const [isClosing, setIsClosing] = useState(false);
-  const [overlayStyle, setOverlayStyle] = useState<OverlayRect | null>(null);
-  const [overlayRadius, setOverlayRadius] = useState(CONTAINER_RADIUS);
   const [showContent, setShowContent] = useState(false);
-  const [cachedCardRect, setCachedCardRect] = useState<OverlayRect | null>(null);
 
-  const sections: SectionDefinition[] = [
-    {
-      id: "experience",
-      title: "Professional Experience",
-      metric: "5",
-      metricLabel: "Positions",
-      icon: Briefcase,
-      itemCount: sectionData.experience.length,
-    },
-    {
-      id: "education",
-      title: "Education",
-      metric: "Queen's University",
-      metricLabel: "Computer Engineering",
-      icon: GraduationCap,
-      itemCount: 1,
-    },
-    {
-      id: "projects",
-      title: "Projects",
-      metric: "4",
-      metricLabel: "Built & Deployed",
-      icon: Code,
-      itemCount: sectionData.projects.length,
-    },
-    {
-      id: "techstack",
-      title: "Tech Stack",
-      metric: "20+",
-      metricLabel: "Technologies",
-      icon: Wrench,
-      itemCount: 5,
-    },
-    {
-      id: "hobbies",
-      title: "Hobbies",
-      metric: "Beyond",
-      metricLabel: "The Code",
-      icon: Heart,
-      itemCount: sectionData.hobbies.length,
-    },
-    {
-      id: "current",
-      title: "Current Focus",
-      metric: "Active",
-      metricLabel: "Today",
-      icon: Calendar,
-      itemCount: sectionData.current.projects.length + sectionData.current.books.length,
-    },
-    {
-      id: "extracurriculars",
-      title: "Extracurriculars",
-      metric: "3",
-      metricLabel: "Activities",
-      icon: Users,
-      itemCount: sectionData.extracurriculars.length,
-    },
-  ];
+  const panelRef = useRef<HTMLDivElement>(null);
+  /* Clip is driven straight on the node rather than through state. Going
+     through React meant the start value and the end value could land in the
+     same frame — the browser never painted the start, so no transition fired
+     and the panel just sat there collapsed over its own hidden tile, which is
+     the blank box. Forcing a reflow between the two writes makes the browser
+     commit the start value first, every time. */
+  const pendingOpenRef = useRef<string | null>(null);
 
-  const currentSection = visibleSection
-    ? sections.find((section) => section.id === visibleSection) ?? null
-    : null;
-  const SectionIcon = currentSection?.icon;
-
-  useEffect(() => {
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      if (closeTimeoutRef.current) {
-        window.clearTimeout(closeTimeoutRef.current);
-      }
-    };
+  const applyClip = useCallback((value: string, durationMs: number | null) => {
+    const node = panelRef.current;
+    if (!node) return;
+    if (durationMs === null) {
+      node.style.transition = "none";
+      node.style.clipPath = value;
+      void node.offsetWidth; // flush, so the next write has something to animate from
+    } else {
+      node.style.transition = `clip-path ${durationMs}ms var(--ease-glass)`;
+      node.style.clipPath = value;
+    }
   }, []);
 
-  const renderSectionContent = (section: Section) => {
-    switch (section) {
-      case "experience":
-        return (
-          <div className="space-y-5">
-            {sectionData.experience.map((job, index) => (
-              <div key={job.id} className="clay-card relative overflow-hidden p-5">
-                {index === 0 && <span className="absolute left-0 top-0 h-full w-1 bg-accent" />}
-                <div className="flex flex-col items-start gap-4 sm:flex-row">
-                  <div className="flex-shrink-0 w-20 h-20 rounded-2xl bg-white overflow-hidden flex items-center justify-center">
-                    {job.image ? (
-                      <img src={job.image} alt={job.title} className="w-full h-full object-contain p-2" />
-                    ) : (
-                      <span className="text-2xl text-accent font-bold">{job.id}</span>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1 space-y-2">
-                    <div>
-                      <h3 className="text-2xl font-serif font-semibold">{job.title}</h3>
-                      <p className={index === 0 ? "text-accent font-medium" : "text-muted-foreground font-medium"}>{job.company}</p>
-                      <span className="text-muted-foreground text-sm">{job.period}</span>
-                    </div>
-                    <p className="text-muted-foreground leading-relaxed">{job.description}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        );
+  // Runs after the panel is in the DOM but before paint.
+  useLayoutEffect(() => {
+    if (!visibleSection) return;
+    const start = pendingOpenRef.current;
+    if (!start) return;
+    pendingOpenRef.current = null;
+    applyClip(start, null);
+    applyClip(FULL_CLIP, OPEN_MS);
+  }, [applyClip, visibleSection]);
 
-      case "education":
-        return (
-          <div className="space-y-6">
-            <div className="clay-card relative overflow-hidden p-6 space-y-2">
-              <span className="absolute left-0 top-0 h-full w-1 bg-accent" />
-              <div className="flex flex-col items-start gap-2 sm:flex-row sm:justify-between">
-                <div>
-                  <h3 className="text-2xl font-serif font-semibold">B.S. Computer Engineering</h3>
-                  <p className="text-accent font-medium">Queen's University</p>
-                </div>
-                <span className="text-muted-foreground">September 2022 - December 2027</span>
-              </div>
-              <div className="space-y-2 mt-4">
-                <p className="font-medium">Relevant Coursework:</p>
-                <ul className="grid grid-cols-1 gap-2 text-muted-foreground sm:grid-cols-2">
-                  <li>• Data Structures & Algorithms</li>
-                  <li>• Computer Architecture</li>
-                  <li>• Operating Systems</li>
-                  <li>• Object-Oriented Programming</li>
-                  <li>• Software Development</li>
-                  <li>• Database Systems</li>
-                  <li>• Computer Networks</li>
-                </ul>
-              </div>
-            </div>
+  const currentSection = SECTIONS.find((section) => section.id === visibleSection) ?? null;
+  const SectionIcon = currentSection?.icon;
 
-            <div className="clay-card p-6 space-y-2">
-              <h3 className="text-xl font-serif font-semibold">Honors & Awards</h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li>• Queen’s University Excellence Scholarship</li>
-                <li>• OKBA Excellence Scholarship</li>
-                <li>• Pitch Competition Winner - QTMA McKinsey Pitch Competition </li>
-              </ul>
-            </div>
-          </div>
-        );
+  useEffect(
+    () => () => {
+      if (closeTimeoutRef.current) window.clearTimeout(closeTimeoutRef.current);
+      if (contentTimeoutRef.current) window.clearTimeout(contentTimeoutRef.current);
+    },
+    [],
+  );
 
-      case "projects":
-        return (
-          <div className="grid gap-6">
-            {sectionData.projects.map((project) => (
-              <div key={project.id} className="clay-card p-6">
-                <div className="flex flex-col items-start gap-4 sm:flex-row">
-                  <div className="flex-shrink-0 w-24 h-24 rounded-2xl bg-white overflow-hidden flex items-center justify-center">
-                    {project.image ? (
-                      <img src={project.image} alt={project.title} className="w-full h-full object-contain p-2" />
-                    ) : (
-                      <span className="text-3xl text-accent font-bold">{project.id}</span>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-2xl font-serif font-semibold mb-2">{project.title}</h3>
-                    <p className="text-muted-foreground mb-4 leading-relaxed">{project.description}</p>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {project.tech.map((tech) => (
-                        <span key={tech} className="px-3 py-1 bg-secondary text-sm rounded-full">
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                    <a href={`https://${project.link}`} className="text-accent hover:underline text-sm">
-                      View on GitHub →
-                    </a>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        );
+  const openSection = useCallback((section: SectionId) => {
+    // Measured before the tile is hidden, so this is its live position.
+    pendingOpenRef.current = insetForCard(gridRef.current, cardRefs.current[section] ?? null) ?? FULL_CLIP;
 
-      case "techstack":
-        return <TechStack />;
-
-      case "hobbies":
-        return (
-          <div className="grid md:grid-cols-2 gap-6">
-            {sectionData.hobbies.map((hobby) => (
-              <div key={hobby.id} className="clay-card p-6">
-                <div className="flex flex-col items-start gap-3 sm:flex-row">
-                  <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-secondary overflow-hidden flex items-center justify-center">
-                    {hobby.image ? (
-                      <img src={hobby.image} alt={hobby.title} className="w-full h-full object-contain" />
-                    ) : (
-                      <span className="text-2xl text-accent font-bold">{hobby.id}</span>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="text-xl font-serif font-semibold mb-3">{hobby.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed">{hobby.description}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        );
-
-      case "current":
-        return (
-          <div className="space-y-6">
-            {/* Active Projects */}
-            <div>
-              <h3 className="text-2xl font-serif font-semibold mb-4">Active Projects</h3>
-              <div className="space-y-4">
-                {sectionData.current.projects.map((project, index) => (
-                  <div key={project.id} className="clay-card relative overflow-hidden p-4 space-y-2">
-                    {index === 0 && <span className="absolute left-0 top-0 h-full w-1 bg-accent" />}
-                    <h4 className="text-xl font-medium">{project.title}</h4>
-                    <p className="text-muted-foreground">{project.description}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {project.tech.map((tech) => (
-                        <span key={tech} className="px-2 py-1 bg-secondary text-xs rounded">{tech}</span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Gym Progress */}
-            <div>
-              <h3 className="text-2xl font-serif font-semibold mb-4">Gym Progress</h3>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {sectionData.current.gymProgress.map((stat, index) => (
-                  <div key={index} className="clay-card p-4">
-                    <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
-                    <p className="text-2xl font-bold text-accent">{stat.value}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Books I'm Reading */}
-            <div>
-              <h3 className="text-2xl font-serif font-semibold mb-4">Currently Reading</h3>
-              <div className="space-y-3">
-                {sectionData.current.books.map((book, index) => (
-                  <div key={book.id} className="flex flex-col items-start gap-4 sm:flex-row">
-                    {book.image ? (
-                      <img src={book.image} alt={book.title} className="w-16 h-24 object-contain rounded-2xl bg-secondary p-1" />
-                    ) : (
-                      <div className="flex-shrink-0 w-16 h-24 bg-gradient-to-br from-accent/20 to-accent/40 rounded-2xl"></div>
-                    )}
-                    <div className="min-w-0">
-                      <h4 className="text-lg font-medium">"{book.title}" by {book.author}</h4>
-                      <p className="text-sm text-muted-foreground">{book.description}</p>
-                      <p className="text-xs text-muted-foreground mt-2">Progress: {book.progress}%</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Music */}
-            <div>
-              <h3 className="text-2xl font-serif font-semibold mb-4">Music I'm Loving</h3>
-              <div className="space-y-3">
-                {sectionData.current.music.map((song, i) => (
-                  <a 
-                    key={i} 
-                    href={song.link} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="clay-card block p-4 group"
-                  >
-                    <p className="text-base font-medium group-hover:text-accent">{song.title}</p>
-                    <p className="text-sm text-muted-foreground">{song.artist}</p>
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            {/* Other Interests */}
-            <div>
-              <h3 className="text-2xl font-serif font-semibold mb-4">Other Focus Areas</h3>
-              <ul className="space-y-2 text-muted-foreground">
-                {sectionData.current.focusAreas.map((area, i) => (
-                  <li key={i}>• {area}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        );
-
-      case "extracurriculars":
-        return (
-          <div className="space-y-6">
-            {sectionData.extracurriculars.map((activity, index) => (
-              <div key={activity.id} className="clay-card relative overflow-hidden p-5">
-                {index === 0 && <span className="absolute left-0 top-0 h-full w-1 bg-accent" />}
-                <div className="flex flex-col items-start gap-4 sm:flex-row">
-                  <div className="flex-shrink-0 w-20 h-20 rounded-2xl bg-white overflow-hidden flex items-center justify-center">
-                    {activity.image ? (
-                      <img src={activity.image} alt={activity.title} className="w-full h-full object-contain p-2" />
-                    ) : (
-                      <span className="text-2xl text-accent font-bold">{activity.id}</span>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1 space-y-2">
-                    <div>
-                      <h3 className="text-2xl font-serif font-semibold">{activity.title}</h3>
-                      <p className={index === 0 ? "text-accent font-medium" : "text-muted-foreground font-medium"}>{activity.organization}</p>
-                      <span className="text-muted-foreground text-sm">{activity.period}</span>
-                    </div>
-                    <p className="text-muted-foreground leading-relaxed">{activity.description}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  const openSection = (section: ConcreteSection) => {
-    const container = gridRef.current;
-    const card = cardRefs.current[section];
-
-    if (!container || !card) {
-      setVisibleSection(section);
-      setOverlayStyle(null);
-      setOverlayRadius(CONTAINER_RADIUS);
-      setIsClosing(false);
-      setShowContent(true);
-      setCachedCardRect(null);
-      return;
-    }
-
-    const containerRect = container.getBoundingClientRect();
-    const cardRect = card.getBoundingClientRect();
-    
-    // Start position - card position relative to container
-    const startRect: OverlayRect = {
-      top: cardRect.top - containerRect.top,
-      left: cardRect.left - containerRect.left,
-      width: cardRect.width,
-      height: cardRect.height,
-    };
-    
-    const cardRadius = parseFloat(window.getComputedStyle(card).borderRadius) || CONTAINER_RADIUS;
-
-    // Cache the card position for smooth closing
-    setCachedCardRect(startRect);
-
-    // Set initial state - overlay starts at card size with no content
     setIsClosing(false);
     setShowContent(false);
-    setOverlayStyle(startRect);
-    setOverlayRadius(cardRadius);
     setVisibleSection(section);
 
-    // Animate to full container size
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
+    if (contentTimeoutRef.current) window.clearTimeout(contentTimeoutRef.current);
+    contentTimeoutRef.current = window.setTimeout(() => setShowContent(true), CONTENT_IN_AT);
+  }, []);
 
-    animationFrameRef.current = window.requestAnimationFrame(() => {
-      // Animate to cover entire container
-      setOverlayStyle({
-        top: 0,
-        left: 0,
-        width: containerRect.width,
-        height: containerRect.height,
-      });
-      setOverlayRadius(CONTAINER_RADIUS);
-    });
-
-    // Show content after expansion animation completes
-    window.setTimeout(() => {
-      setShowContent(true);
-    }, ANIMATION_DURATION_MS + 50);
-  };
-
-  const closeSection = (section: ConcreteSection, onClosed?: () => void) => {
-    const container = gridRef.current;
-    
-    if (!container || !cachedCardRect) {
-      setVisibleSection(null);
-      setOverlayStyle(null);
-      setOverlayRadius(CONTAINER_RADIUS);
-      setIsClosing(false);
+  const closeSection = useCallback(
+    (section: SectionId, onClosed?: () => void) => {
       setShowContent(false);
-      setCachedCardRect(null);
-      onClosed?.();
-      return;
-    }
+      setIsClosing(true);
 
-    const card = cardRefs.current[section];
-    const cardRadius = card ? parseFloat(window.getComputedStyle(card).borderRadius) || CONTAINER_RADIUS : CONTAINER_RADIUS;
+      const node = panelRef.current;
+      // Re-measured now rather than reused from open, so the pane lands on the
+      // tile wherever it currently sits — even if the window or zoom changed.
+      const target = insetForCard(gridRef.current, cardRefs.current[section] ?? null) ?? FULL_CLIP;
 
-    // Hide content first
-    setShowContent(false);
-    setIsClosing(true);
+      const finish = () => {
+        if (closeTimeoutRef.current) window.clearTimeout(closeTimeoutRef.current);
+        closeTimeoutRef.current = undefined;
+        node?.removeEventListener("transitionend", handleEnd);
+        setVisibleSection(null);
+        setIsClosing(false);
+        setShowContent(false);
+        onClosed?.();
+      };
 
-    // Wait briefly for content to fade, then animate back to card position
-    // The grid transition is happening at the same time
-    window.setTimeout(() => {
-      setOverlayStyle(cachedCardRect);
-      setOverlayRadius(cardRadius);
-    }, 100);
+      // Hand the tile back the frame the pane lands, not a timer's guess at it.
+      // A stale timer is what left an empty glass rectangle sitting on a
+      // still-hidden tile for the last stretch of the close.
+      function handleEnd(event: TransitionEvent) {
+        if (event.target === node && event.propertyName === "clip-path") finish();
+      }
 
-    if (closeTimeoutRef.current) {
-      window.clearTimeout(closeTimeoutRef.current);
-    }
+      node?.addEventListener("transitionend", handleEnd);
+      applyClip(target, CLOSE_MS);
 
-    // Clean up after animation completes
-    closeTimeoutRef.current = window.setTimeout(() => {
-      setVisibleSection(null);
-      setOverlayStyle(null);
-      setOverlayRadius(CONTAINER_RADIUS);
-      setIsClosing(false);
-      setShowContent(false);
-      setCachedCardRect(null);
-      onClosed?.();
-    }, ANIMATION_DURATION_MS + 100);
+      // Fallback: transitionend never fires under reduced motion or in a
+      // backgrounded tab.
+      if (closeTimeoutRef.current) window.clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = window.setTimeout(finish, CLOSE_MS + 120);
+    },
+    [applyClip],
+  );
+
+  const handleCardClick = (section: SectionId) => {
+    if (isClosing) return;
+    if (visibleSection === section) return closeSection(section);
+    if (visibleSection) return closeSection(visibleSection, () => openSection(section));
+    openSection(section);
   };
 
-  const handleCardClick = (section: Section) => {
-    if (!section || isClosing) return;
-
-    if (visibleSection === section) {
-      closeSection(section);
-      return;
-    }
-
-    if (visibleSection && visibleSection !== section) {
-      closeSection(visibleSection as ConcreteSection, () => openSection(section as ConcreteSection));
-      return;
-    }
-
-    openSection(section as ConcreteSection);
-  };
-
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (!visibleSection || isClosing) return;
-    closeSection(visibleSection as ConcreteSection);
-  };
+    closeSection(visibleSection);
+  }, [closeSection, isClosing, visibleSection]);
+
+  useEffect(() => {
+    if (!visibleSection) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") handleClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [handleClose, visibleSection]);
+
+  const isOpen = Boolean(visibleSection) && !isClosing;
 
   return (
-    <div className="min-h-dvh overflow-y-auto bg-background flex flex-col md:h-dvh md:overflow-hidden">
-      <header className="border-b flex-shrink-0 border-border bg-card/70 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 md:py-3 lg:py-4">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
-            <div className="flex items-center gap-4 md:gap-6">
-              <div className="relative h-16 w-16 overflow-hidden rounded-full border border-border shadow-md">
-                <img
-                  src="/headshot.jpg"
-                  alt="Kayne Lee headshot"
-                  className="object-cover transition-all duration-700 ease-out scale-100 hover:scale-105"
-                  sizes="64px"
-                />
-              </div>
-              <div className="space-y-1">
-                <h1 className="text-2xl font-serif font-bold text-foreground md:text-3xl">Kayne Lee</h1>
-                <p className="max-w-xl text-sm text-muted-foreground md:text-base">
-                  Applied ML Engineer Intern @ Microsoft <br />
-                  Computer Engineering @ Queen's University
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-muted-foreground sm:text-sm">
-              <a
-                href="mailto:kayne.lee2@outlook.com"
-                className="break-all rounded-full border border-border px-4 py-2 transition-all duration-300 ease-out hover:border-accent hover:text-foreground"
-              >
-                kayne.lee2@outlook.com
-              </a>
-              <a
-                href="https://www.linkedin.com/in/kaynelee"
-                target="_blank"
-                rel="noreferrer"
-                className="break-all rounded-full border border-border px-4 py-2 transition-all duration-300 ease-out hover:border-accent hover:text-foreground"
-              >
-                linkedin.com/in/kaynelee
-              </a>
-              <a
-                href="https://github.com/kayne-lee"
-                target="_blank"
-                rel="noreferrer"
-                className="break-all rounded-full border border-border px-4 py-2 transition-all duration-300 ease-out hover:border-accent hover:text-foreground"
-              >
-                github.com/kayne-lee
-              </a>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="flex min-h-dvh flex-col gap-3 p-4 sm:gap-4 sm:p-6 lg:h-dvh lg:overflow-hidden lg:gap-5 lg:p-9">
+      <DashboardHeader />
 
-      <main className="flex-1 md:min-h-0">
-        <div className="w-full max-w-7xl mx-auto px-6 py-5 sm:px-7 md:h-full md:px-8 md:py-6 lg:px-10 lg:py-7">
+      <main className="flex min-h-0 flex-1 flex-col">
+        <GlassPane
+          ref={gridRef}
+          depth={1}
+          frost
+          settleIndex={1}
+          className="relative flex min-h-0 flex-1 flex-col overflow-hidden p-3 sm:p-4 lg:p-5"
+        >
+          {/* The tile grid. Blurs and recedes behind the opening pane —
+              which is the one moment backdrop-filter has real content to bend. */}
           <div
-            ref={gridRef}
-            className="relative overflow-hidden rounded-3xl border border-border bg-card/60 p-6 shadow-lg md:h-full md:p-8 lg:p-9"
+            className={`grid min-h-0 flex-1 gap-3 transition-all [transition-timing-function:var(--ease-glass)] sm:grid-cols-2 lg:h-full lg:auto-rows-fr lg:grid-cols-4 lg:grid-rows-3 ${
+              isOpen
+                ? /* Blurred, not just faded. Faded-but-sharp text stays
+                     readable through the panel and reads as a double
+                     exposure. Blurring turns the grid into soft colour, which
+                     is what keeps the open panel from looking like a plain
+                     white sheet. */
+                  "pointer-events-none scale-[0.98] opacity-40 blur-[12px]"
+                : "pointer-events-auto scale-100 opacity-100 blur-0"
+            }`}
+            style={{
+              transitionDuration: `${isClosing ? CLOSE_MS : OPEN_MS}ms`,
+            }}
           >
-            <div
-              className={`grid gap-4 sm:grid-cols-2 sm:gap-5 md:h-full md:grid-cols-3 md:auto-rows-fr lg:gap-6 transition-all duration-500 ease-out ${
-                visibleSection && !isClosing
-                  ? "pointer-events-none scale-95 opacity-0"
-                  : "pointer-events-auto scale-100 opacity-100"
-              }`}
-            >
-              {sections.map((section) => {
-                // Extract images from sectionData based on section type
-                const getImages = () => {
-                  switch(section.id) {
-                    case 'experience':
-                      return sectionData.experience.map(item => item.image);
-                    case 'projects':
-                      return sectionData.projects.map(item => item.image);
-                    case 'hobbies':
-                      return sectionData.hobbies.map(item => item.image);
-                    case 'extracurriculars':
-                      return sectionData.extracurriculars.map(item => item.image);
-                    case 'current':
-                      return []; // No image cascade for current section
-                    default:
-                      return [];
-                  }
-                };
-
-                return (
-                  <div
-                    key={section.id}
-                    ref={(node) => {
-                      cardRefs.current[section.id] = node;
-                    }}
-                    className={`transition-all duration-500 ease-out rounded-[28px] ${
-                      section.id === "experience" || section.id === "extracurriculars" ? "sm:col-span-2" : ""
-                    }`}
-                  >
-                    <SectionCard
-                      title={section.title}
-                      metric={section.metric}
-                      metricLabel={section.metricLabel}
-                      icon={section.icon}
-                      itemCount={section.itemCount}
-                      images={getImages()}
-                      onClick={() => handleCardClick(section.id)}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-
-            {visibleSection && overlayStyle && (
-              <div
-                className={`absolute z-20 flex min-h-0 flex-col ${
-                  showContent ? 'bg-card backdrop-blur-sm shadow-2xl' : ''
-                } ${isClosing ? "pointer-events-none" : "pointer-events-auto"}`}
-                style={{
-                  top: overlayStyle.top,
-                  left: overlayStyle.left,
-                  width: overlayStyle.width,
-                  height: overlayStyle.height,
-                  borderRadius: overlayRadius,
-                  backgroundColor: showContent ? 'hsl(var(--card))' : 'transparent',
-                  border: showContent ? '1px solid hsl(var(--border))' : 'none',
-                  padding: showContent ? "clamp(0.875rem, 2vw, 2rem)" : "0",
-                  transition: `top ${ANIMATION_DURATION_MS}ms cubic-bezier(0.4, 0, 0.2, 1), left ${ANIMATION_DURATION_MS}ms cubic-bezier(0.4, 0, 0.2, 1), width ${ANIMATION_DURATION_MS}ms cubic-bezier(0.4, 0, 0.2, 1), height ${ANIMATION_DURATION_MS}ms cubic-bezier(0.4, 0, 0.2, 1), border-radius ${ANIMATION_DURATION_MS}ms cubic-bezier(0.4, 0, 0.2, 1), background-color 200ms, border 200ms, padding 200ms`,
+            {SECTIONS.map((section, index) => (
+              <SectionCard
+                key={section.id}
+                ref={(node) => {
+                  cardRefs.current[section.id] = node;
                 }}
+                eyebrow={section.eyebrow}
+                title={section.title}
+                settleIndex={index + 2}
+                className={`min-h-[11.5rem] lg:min-h-0 ${section.area}`}
+                onClick={() => handleCardClick(section.id)}
+                /* Hidden while its own pane is lifted off — the overlay is
+                   standing in for it, so two copies must never show at once. */
+                style={{ visibility: visibleSection === section.id ? "hidden" : "visible" }}
               >
-                {/* Only show content when expanded (not at card size) */}
-                {showContent && (
-                  <>
-                    <div className="mb-6 flex flex-wrap items-start justify-between gap-3 md:gap-6">
-                      <div className="flex min-w-0 items-start gap-4">
-                        {SectionIcon && (
-                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/10 text-accent shadow-sm">
-                            <SectionIcon className="h-7 w-7 md:h-8 md:w-8" />
-                          </div>
-                        )}
-                        <div className="min-w-0 space-y-2">
-                          <p className="text-sm uppercase tracking-wide text-muted-foreground">
-                            {currentSection?.metricLabel}
-                          </p>
-                          <h2 className="text-xl font-serif font-semibold text-foreground sm:text-2xl md:text-3xl">
-                            {currentSection?.title}
-                          </h2>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleClose}
-                        className="rounded-full border border-border p-2 text-muted-foreground transition-all duration-300 ease-out hover:border-accent hover:text-foreground"
-                        aria-label="Close section"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                    </div>
-                    <div className="flex-1 min-h-0 overflow-y-auto pr-1 text-foreground sm:pr-2">
-                      {renderSectionContent(visibleSection)}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
+                {section.preview}
+              </SectionCard>
+            ))}
           </div>
-        </div>
+
+          {visibleSection && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label={currentSection?.title}
+              ref={panelRef}
+              className={`glass glass-panel absolute inset-0 z-20 flex flex-col overflow-hidden ${
+                isClosing ? "pointer-events-none" : "pointer-events-auto"
+              }`}
+              style={{
+                clipPath: FULL_CLIP,
+                padding: "clamp(1rem, 2vw, 1.75rem)",
+                willChange: "clip-path",
+              }}
+            >
+              <div
+                className="flex min-h-0 flex-1 flex-col"
+                style={{
+                  opacity: showContent ? 1 : 0,
+                  transition: showContent
+                    ? "opacity 300ms var(--ease-glass)"
+                    : `opacity ${CONTENT_OUT_MS}ms ease-in ${CONTENT_OUT_DELAY}ms`,
+                }}
+                aria-hidden={!showContent}
+              >
+                {/* Header shares the content's measure so the title, the
+                    close button, and every card below sit on one column. */}
+                <div
+                  className={`mx-auto mb-5 flex w-full items-start justify-between gap-4 ${
+                    currentSection?.measure ?? "max-w-4xl"
+                  }`}
+                >
+                  <div className="flex min-w-0 items-start gap-3.5">
+                    {SectionIcon && (
+                      <span className="glass-well flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl">
+                        <SectionIcon className="h-5 w-5 text-ink-2" aria-hidden />
+                      </span>
+                    )}
+                    <div className="min-w-0">
+                      <p className="eyebrow">{currentSection?.eyebrow}</p>
+                      <h2 className="mt-0.5 font-display text-2xl font-bold tracking-[-0.03em] text-ink sm:text-3xl">
+                        {currentSection?.title}
+                      </h2>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    className="glass-chip shrink-0 p-2.5 hover:text-ink"
+                    aria-label="Close section"
+                  >
+                    <X className="h-4 w-4" aria-hidden />
+                  </button>
+                </div>
+
+                <div className="-mr-1 min-h-0 flex-1 overflow-y-auto pr-1 sm:-mr-2 sm:pr-2">
+                  <div className={`mx-auto w-full ${currentSection?.measure ?? "max-w-4xl"}`}>
+                    {currentSection?.body}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </GlassPane>
       </main>
     </div>
   );

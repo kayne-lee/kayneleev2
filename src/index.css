@@ -2,100 +2,85 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* ============================================================================
+   LIQUID GLASS — light only.
+
+   A pastel mesh field with glossy orbs floating on it, seen through frosted
+   panes. The layers, bottom to top:
+     1. the field   — a fixed mesh gradient painted on <html>
+     2. the orbs    — AmbientField, behind everything, overflowing the frame
+     3. the panes   — three steps of translucency (frame < tile < card), each
+                      heavily blurred so the field's color carries through
+     4. the rims    — 1px prismatic edge + pointer-tracked specular highlight
+
+   Because there is real color behind the glass, `backdrop-filter` is the
+   material here, not a garnish: drop the blur and the whole thing collapses
+   into flat white cards.
+
+   Light source is top-left. Every highlight, shadow, and orb in this file
+   agrees with that, which is what keeps them reading as one material.
+
+   shadcn tokens must stay HSL triples.
+   ========================================================================= */
 
 @layer base {
   :root {
-    /* Sophisticated monochromatic palette */
-    --background: 0 0% 98%;
-    --foreground: 0 0% 10%;
+    /* --- ink ---------------------------------------------------------- */
+    /* Deep navy rather than black — it belongs to the blue field. */
+    /* Contrast is measured against the darkest the field ever gets — frosted
+       glass over the cobalt orb. ink-3 sits at 4.6:1 there, so do not lighten
+       it — or thin the panes, or deepen the orb — without re-measuring. */
+    --ink-1: 224 45% 11%; /* 10.9:1 worst case */
+    --ink-2: 220 22% 30%; /*  5.1:1 worst case */
+    --ink-3: 220 16% 32%; /*  4.6:1 worst case */
 
+    /* --- the one accent: ultramarine, the color at a prism's edge ------ */
+    --accent: 231 81% 53%;
+    --accent-foreground: 0 0% 100%;
+
+    /* --- glass -------------------------------------------------------- */
+    /* Three depth steps. Kept low enough that the field's color carries
+       through every pane — the frost is the point, not a white card. */
+    --pane-1: 255 255 255 / 0.26; /* frame  — the container */
+    --pane-2: 255 255 255 / 0.52; /* tile   — sits on the frame */
+    --pane-panel: 255 255 255 / 0.42; /* the opened section panel */
+    --pane-3: 255 255 255 / 0.32; /* card   — inside an opened tile */
+
+    --well: 255 255 255 / 0.5; /* recessed slot for logos */
+
+    --rim-hi: 255 255 255 / 0.75; /* leading edge, top-left */
+    --rim-lo: 255 255 255 / 0.16; /* trailing edge, bottom-right */
+
+    /* Chromatic aberration on the rim. 1px edges only — never a fill. */
+    --prism-cool: 168 226 255 / 0.85;
+    --prism-warm: 255 190 226 / 0.7;
+
+    /* Pointer position, in px relative to the pane. Set by GlassPane. */
+    --mx: 50%;
+    --my: 0%;
+    --sheen: 0; /* 0..1, ramped on hover */
+
+    /* --- shadcn compatibility ----------------------------------------- */
+    --background: 217 26% 95%;
+    --foreground: var(--ink-1);
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
-
+    --card-foreground: var(--ink-1);
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
+    --popover-foreground: var(--ink-1);
+    --primary: 219 30% 9%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 217 24% 92%;
+    --secondary-foreground: var(--ink-1);
+    --muted: 217 24% 93%;
+    --muted-foreground: var(--ink-3);
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 217 20% 87%;
+    --input: 217 20% 87%;
+    --ring: var(--accent);
+    --radius: 0.75rem;
 
-    /* Elegant charcoal primary */
-    --primary: 0 0% 15%;
-    --primary-foreground: 0 0% 98%;
-
-    /* Subtle grays for secondary elements */
-    --secondary: 0 0% 95%;
-    --secondary-foreground: 0 0% 10%;
-
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
-
-    /* Sophisticated blue accent */
-    --accent: 215 70% 60%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 215 70% 60%;
-
-    --radius: 0.5rem;
-
-    /* Soft cool blue-gray used for clay shadows on the light theme */
-    --block-shadow: 220 25% 55%;
-    --block-highlight: hsl(0 0% 100% / 0.55);
-
-    /* Soft gray-blue extruded "side" of 3D blocks on the light theme */
-    --block-edge: 220 20% 80%;
-    /* Matte surface sheen: very low-contrast top-to-bottom shading */
-    --block-matte-top: hsl(0 0% 100% / 0.5);
-    --block-matte-bottom: hsl(220 25% 55% / 0.07);
-
-    /* Transitions */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-modal: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .dark {
-    /* Electric-blue-on-navy-slate dark theme */
-    --background: 222 47% 6%;
-    --foreground: 210 40% 96%;
-
-    --card: 222 40% 11%;
-    --card-foreground: 210 40% 96%;
-
-    --popover: 222 44% 9%;
-    --popover-foreground: 210 40% 96%;
-
-    --primary: 210 40% 96%;
-    --primary-foreground: 222 47% 8%;
-
-    --secondary: 217 33% 16%;
-    --secondary-foreground: 210 40% 96%;
-
-    --muted: 217 33% 14%;
-    --muted-foreground: 215 20% 65%;
-
-    --accent: 217 91% 60%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 217 33% 18%;
-    --input: 217 33% 18%;
-    --ring: 217 91% 60%;
-
-    /* Darker blue used as the extruded "side" of 3D blocks */
-    --block-edge: 217 60% 22%;
-
-    /* Clay depth on dark: near-black navy shadow + subtle top highlight */
-    --block-shadow: 222 47% 1%;
-    --block-highlight: hsl(0 0% 100% / 0.12);
-    /* Matte surface sheen on dark: faint top light, faint bottom shade */
-    --block-matte-top: hsl(210 40% 96% / 0.06);
-    --block-matte-bottom: hsl(222 47% 1% / 0.45);
+    --ease-glass: cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
@@ -104,101 +89,453 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
-  body {
-    @apply bg-background text-foreground font-sans antialiased;
-    overflow-x: clip;
+  html {
+    background-color: #b9c6f4;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-serif;
+  body {
+    @apply font-sans antialiased;
+    background: transparent;
+    color: hsl(var(--ink-2));
+    overflow-x: clip;
+    font-feature-settings: "cv05" 1, "ss01" 1;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display;
+    color: hsl(var(--ink-1));
+    /* Inter needs negative tracking to hold together at display sizes. */
+    letter-spacing: -0.021em;
+    font-feature-settings: "cv05" 1, "ss01" 1, "cv11" 1;
+  }
+
+  ::selection {
+    background: hsl(var(--accent) / 0.18);
+    color: hsl(var(--ink-1));
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--accent));
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  /* Thin, glassy scrollbars inside opened panes. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--ink-3) / 0.35) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: hsl(var(--ink-3) / 0.3);
+    border-radius: 99px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--ink-3) / 0.5);
   }
 }
 
 @layer utilities {
-  .transition-smooth {
-    transition: var(--transition-smooth);
+  .eyebrow {
+    @apply font-mono text-[0.6875rem] font-medium uppercase;
+    letter-spacing: 0.14em;
+    color: hsl(var(--ink-3));
   }
 
-  .transition-modal {
-    transition: var(--transition-modal);
+  /* Load sequence: glass settling. Stagger is set inline per pane. */
+  .settle {
+    animation: settle 0.66s var(--ease-glass) both;
+    animation-delay: var(--settle-delay, 0ms);
   }
 }
 
-/* Soft-3D "clay" block: puffy floating card with soft shadow + subtle highlight.
-   Shared by dashboard tiles and tech-stack bento cards.
-   Intentionally UNLAYERED so its box-shadow beats Tailwind's shadow-* utilities
-   (e.g. shadcn Card's default `shadow-sm`). */
-.block-3d {
-  border-radius: 28px;
-  /* Matte clay surface: soft top-light to bottom-shade, no gloss. */
-  background-image: linear-gradient(
-    to bottom,
-    var(--block-matte-top) 0%,
-    transparent 38%,
-    var(--block-matte-bottom) 100%
-  );
-  box-shadow:
-    /* soft ambient halo hugging every edge of the tile */
-    0 0 24px 1px hsl(var(--block-shadow) / 0.45),
-    /* deep, soft floating drop shadow */
-    0 24px 46px -16px hsl(var(--block-shadow) / 0.8),
-    0 11px 22px -10px hsl(var(--block-shadow) / 0.55),
-    /* soft matte top highlight (light catching the top edge) */
-    inset 0 1.5px 0 0 var(--block-highlight),
-    /* inner bottom shade for a puffy, rounded clay body */
-    inset 0 -12px 22px -10px hsl(var(--block-shadow) / 0.45);
-  transform: translateY(0);
-  transition:
-    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+/* ============================================================================
+   GLASS PRIMITIVES + THE ORBS
+
+   All of this lives in @layer components so Tailwind utilities reliably win.
+   It used to be unlayered, which meant `.glass { position: relative }` beat
+   the `.absolute` utility on the opened panel — the panel was never actually
+   absolutely positioned, so its offsets were measured from wherever flex flow
+   dropped it. That is what stranded it on zoom and made it close to the wrong
+   place. Same trap applied to every `rounded-*` on a .glass-well.
+
+   (The original reason for keeping these unlayered was to beat shadcn Card's
+   `shadow-sm`. GlassPane renders a plain element now, so Card is out of the
+   picture and the layer is safe.)
+   ========================================================================= */
+
+@layer components {
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+  }
+
+  /* Cobalt swoosh, upper right. Squashed off-circle and rotated so it reads as
+     a thrown shape rather than a ball. */
+  .orb-blue {
+    top: -11rem;
+    right: -7rem;
+    width: 40rem;
+    height: 30rem;
+    border-radius: 58% 42% 46% 54% / 62% 54% 46% 38%;
+    transform: rotate(-18deg);
+    background:
+      radial-gradient(38% 44% at 30% 22%, rgb(255 255 255 / 0.95) 0%, transparent 62%),
+      radial-gradient(70% 78% at 62% 40%, #93a6f9 0%, #8195f7 46%, #788cf6 78%, transparent 92%),
+      radial-gradient(100% 100% at 50% 50%, #b3c1fc 0%, #93a5f9 60%, transparent 88%);
+    filter: blur(2px);
+    opacity: 1;
+    animation: drift-a 34s ease-in-out infinite;
+  }
+
+  /* The specular streak that sells it as a solid, glossy body. */
+  .orb-blue::after {
+    content: "";
+    position: absolute;
+    inset: 8% 22% 46% 12%;
+    border-radius: 50% 50% 60% 40% / 70% 60% 40% 30%;
+    background: linear-gradient(128deg, rgb(255 255 255 / 0.92) 0%, rgb(255 255 255 / 0.12) 46%, transparent 72%);
+    filter: blur(6px);
+  }
+
+  /* Magenta sphere, lower left — the heaviest object on the page. */
+  .orb-pink {
+    bottom: -9rem;
+    left: -7rem;
+    width: 30rem;
+    height: 30rem;
+    background:
+      radial-gradient(circle at 34% 26%, rgb(255 255 255 / 0.9) 0%, rgb(255 240 250 / 0.5) 12%, transparent 34%),
+      radial-gradient(circle at 40% 34%, #f6c9e8 0%, #e58ecb 34%, #c65ba8 64%, #8e3f7e 100%);
+    box-shadow: 0 6rem 9rem -3rem rgb(160 60 140 / 0.42);
+    opacity: 1;
+    animation: drift-b 44s ease-in-out infinite;
+  }
+
+  /* Its bloom, thrown onto the field. */
+  .orb-pink::after {
+    content: "";
+    position: absolute;
+    inset: -34%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(244 168 216 / 0.5) 0%, transparent 66%);
+    filter: blur(28px);
+    z-index: -1;
+  }
+
+  /* Mint bloom, lower right. No body — just light, to keep that corner alive. */
+  .orb-mint {
+    right: -6rem;
+    bottom: 8%;
+    width: 30rem;
+    height: 24rem;
+    background: radial-gradient(circle, rgb(196 236 206 / 0.7) 0%, rgb(226 240 176 / 0.35) 44%, transparent 72%);
+    filter: blur(34px);
+    animation: drift-a 52s ease-in-out infinite reverse;
+  }
+
+  /* The orbs are sized for a desktop field. Left at full size on a phone they
+     swallow the whole page, so they scale with it. */
+  @media (max-width: 1023px) {
+    .orb-blue {
+      top: -7rem;
+      right: -5rem;
+      width: 26rem;
+      height: 20rem;
+    }
+    .orb-pink {
+      bottom: -6rem;
+      left: -5rem;
+      width: 21rem;
+      height: 21rem;
+    }
+    .orb-mint {
+      width: 20rem;
+      height: 16rem;
+    }
+  }
+
+  @keyframes drift-a {
+    0%,
+    100% {
+      translate: 0 0;
+    }
+    50% {
+      translate: -2.5rem 2rem;
+    }
+  }
+
+  @keyframes drift-b {
+    0%,
+    100% {
+      translate: 0 0;
+    }
+    50% {
+      translate: 2rem -2.5rem;
+    }
+  }
+
+  /* ============================================================================
+     GLASS PRIMITIVES
+
+     Deliberately UNLAYERED so these box-shadows beat Tailwind's shadow-*
+     utilities (shadcn's Card ships `shadow-sm`).
+     ========================================================================= */
+
+  .glass {
+    position: relative;
+    isolation: isolate;
+    border-radius: 26px;
+    background-color: rgb(var(--pane-2));
+    /* Top-lit surface: the pane is brighter where the light lands. */
+    background-image: linear-gradient(
+      168deg,
+      rgb(255 255 255 / 0.4) 0%,
+      rgb(255 255 255 / 0) 46%,
+      rgb(120 110 190 / 0.05) 100%
+    );
+    box-shadow:
+      /* the pane's own body, catching light at the top edge */ inset 0 1px 0 0 rgb(var(--rim-hi)),
+      inset 0 -1px 0 0 rgb(var(--rim-lo)),
+      /* violet-tinted lift, borrowed from the field rather than neutral gray */
+      0 2px 6px -3px rgb(56 48 110 / 0.14),
+      0 18px 40px -22px rgb(56 48 110 / 0.3),
+      0 40px 80px -48px rgb(56 48 110 / 0.34);
+    transition:
+      transform 0.4s var(--ease-glass),
+      box-shadow 0.4s var(--ease-glass);
+  }
+
+  /* Opt in to real frosting. Everything that sits on the field or on the grid
+     wants this; the small repeated bits (chips) deliberately do not, since the
+     blur cannot read at that size and there can be dozens on screen. */
+  .glass-frost {
+    backdrop-filter: blur(30px) saturate(155%);
+    -webkit-backdrop-filter: blur(30px) saturate(155%);
+  }
+
+  .glass-1 {
+    background-color: rgb(var(--pane-1));
+  }
+
+  /* The opened section panel. Thinner and less blurred than a tile so the orbs
+     behind it stay recognisable as objects rather than dissolving into haze. */
+  .glass-panel {
+    background-color: rgb(var(--pane-panel));
+    backdrop-filter: blur(26px) saturate(165%);
+    -webkit-backdrop-filter: blur(26px) saturate(165%);
+  }
+
+  /* Tiles read as glass because they are translucent over the frosted frame —
+     they do not need to blur the field a second time. */
+  .glass-3 {
+    background-color: rgb(var(--pane-3));
+    border-radius: 18px;
+    backdrop-filter: blur(22px) saturate(150%);
+    -webkit-backdrop-filter: blur(22px) saturate(150%);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.62),
+      inset 0 -1px 0 0 rgb(255 255 255 / 0.14),
+      0 2px 5px -3px rgb(56 48 110 / 0.14),
+      0 14px 32px -22px rgb(56 48 110 / 0.3);
+  }
+
+  /* ---- SIGNATURE: the prismatic rim -----------------------------------------
+     Real glass splits light. This is a 1px border whose gradient runs cool on
+     the leading edge and warm on the trailing one — nearly invisible on a
+     single pane, but across a grid it is the whole reason the page reads as
+     glass instead of as white boxes. */
+  .glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      142deg,
+      rgb(var(--prism-cool)) 0%,
+      rgb(255 255 255 / 0.9) 26%,
+      rgb(255 255 255 / 0.35) 52%,
+      rgb(var(--prism-warm)) 82%,
+      rgb(255 255 255 / 0.22) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 2;
+    transition:
+      padding 0.4s var(--ease-glass),
+      opacity 0.4s var(--ease-glass);
+  }
+
+  /* ---- specular highlight, tracking the pointer ---------------------------- */
+  .glass::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      16rem circle at var(--mx) var(--my),
+      rgb(255 255 255 / 0.85),
+      rgb(255 255 255 / 0.12) 42%,
+      transparent 68%
+    );
+    opacity: var(--sheen);
+    pointer-events: none;
+    z-index: 1;
+    transition: opacity 0.45s var(--ease-glass);
+  }
+
+  .glass-interactive {
+    cursor: pointer;
+  }
+
+  .glass-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.95),
+      inset 0 -1px 0 0 rgb(var(--rim-lo)),
+      0 2px 6px -3px rgb(56 48 110 / 0.16),
+      0 26px 52px -26px rgb(56 48 110 / 0.36),
+      0 52px 96px -52px rgb(56 48 110 / 0.4);
+  }
+
+  /* The aberration widens as the pane comes toward you. */
+  .glass-interactive:hover::before {
+    padding: 1.5px;
+  }
+
+  .glass-interactive:active {
+    transform: translateY(0) scale(0.994);
+    transition-duration: 0.12s;
+  }
+
+  /* ---- recessed slot: logos, avatar. Inverted lighting — sunk, not raised. -- */
+  .glass-well {
+    position: relative;
+    border-radius: 14px;
+    background-color: rgb(var(--well));
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 0.55),
+      inset 0 1px 3px 0 rgb(56 48 110 / 0.12),
+      0 1px 2px -1px rgb(56 48 110 / 0.16);
+    overflow: hidden;
+  }
+
+  /* ---- mono pill: contact links, tech chips, date ranges ------------------- */
+  .glass-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    padding: 0.375rem 0.75rem;
+    /* No backdrop-filter: chips always sit on an already-frosted pane, they are
+       too small for a blur to read, and a tech-stack panel holds 30+ of them. */
+    background: rgb(255 255 255 / 0.46);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.75),
+      inset 0 0 0 1px rgb(255 255 255 / 0.4),
+      0 2px 6px -3px rgb(56 48 110 / 0.24);
+    color: hsl(var(--ink-2));
+    transition:
+      color 0.25s var(--ease-glass),
+      box-shadow 0.25s var(--ease-glass),
+      transform 0.25s var(--ease-glass);
+  }
+
+  a.glass-chip:hover {
+    color: hsl(var(--accent));
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.95),
+      inset 0 0 0 1px hsl(var(--accent) / 0.35),
+      0 4px 12px -4px hsl(var(--accent) / 0.35);
+  }
+
+  /* ---- thin progress rule -------------------------------------------------- */
+  .glass-meter {
+    position: relative;
+    height: 3px;
+    border-radius: 99px;
+    background: rgb(56 48 110 / 0.14);
+    overflow: hidden;
+  }
+
+  .glass-meter > span {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-radius: 99px;
+    background: linear-gradient(90deg, hsl(var(--accent) / 0.55), hsl(var(--accent)));
+  }
+
+  /* ---- the live dot: the only thing on the page that moves on its own ------
+     Self-contained on purpose. The halo and the pulse ring used to overhang
+     the element's own box, so any ancestor with `overflow: hidden` clipped
+     them — which is what sheared the dot on the Current focus tile. */
+  .live-dot {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 12px;
+    height: 12px;
+    vertical-align: middle;
+  }
+
+  .live-dot::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 99px;
+    background: hsl(var(--accent));
+    box-shadow: 0 0 0 3px hsl(var(--accent) / 0.16);
+  }
+
+  .live-dot::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 99px;
+    border: 1px solid hsl(var(--accent) / 0.5);
+    animation: breathe 2.4s ease-in-out infinite;
+  }
+
 }
 
-.block-3d:hover {
-  transform: translateY(-6px) scale(1.01);
-  box-shadow:
-    0 0 30px 2px hsl(var(--block-shadow) / 0.5),
-    0 36px 60px -18px hsl(var(--block-shadow) / 0.85),
-    0 16px 30px -12px hsl(var(--block-shadow) / 0.6),
-    inset 0 1.5px 0 0 var(--block-highlight),
-    inset 0 -12px 22px -10px hsl(var(--block-shadow) / 0.45),
-    0 0 0 1px hsl(var(--accent) / 0.35);
-}
+/* ============================================================================
+   REDUCED MOTION — the load sequence, sheen, and pulse stop.
+   Open/close still works, just without the travel.
+   ========================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 
-.block-3d:active {
-  transform: translateY(-2px) scale(0.997);
-  box-shadow:
-    0 0 18px 1px hsl(var(--block-shadow) / 0.4),
-    0 14px 26px -14px hsl(var(--block-shadow) / 0.6),
-    0 6px 14px -8px hsl(var(--block-shadow) / 0.5),
-    inset 0 1.5px 0 0 var(--block-highlight),
-    inset 0 -10px 18px -10px hsl(var(--block-shadow) / 0.4);
-}
+  .glass::after {
+    display: none;
+  }
 
-/* Lighter clay surface for content inside the expanded overlay. */
-.clay-card {
-  border-radius: 18px;
-  background-color: hsl(var(--card));
-  background-image: linear-gradient(
-    to bottom,
-    var(--block-matte-top) 0%,
-    transparent 42%,
-    var(--block-matte-bottom) 100%
-  );
-  box-shadow:
-    0 0 16px 1px hsl(var(--block-shadow) / 0.35),
-    0 14px 26px -12px hsl(var(--block-shadow) / 0.6),
-    inset 0 1.5px 0 0 var(--block-highlight),
-    inset 0 -8px 14px -8px hsl(var(--block-shadow) / 0.4);
-  transition:
-    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.clay-card:hover {
-  box-shadow:
-    0 0 20px 2px hsl(var(--block-shadow) / 0.4),
-    0 18px 30px -14px hsl(var(--block-shadow) / 0.62),
-    inset 0 1.5px 0 0 var(--block-highlight),
-    inset 0 -8px 14px -8px hsl(var(--block-shadow) / 0.4),
-    0 0 0 1px hsl(var(--accent) / 0.25);
+  .glass-interactive:hover {
+    transform: none;
+  }
 }

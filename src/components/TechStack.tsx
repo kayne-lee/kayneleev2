@@ -1,5 +1,6 @@
-import { Sparkles, Database, Boxes } from "lucide-react";
+import { Boxes, Database } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { GlassPane } from "@/components/glass/GlassPane";
 import { cn } from "@/lib/utils";
 
 type Skill = {
@@ -12,7 +13,6 @@ type Skill = {
 
 type Category = {
   title: string;
-  featured?: boolean;
   /** Tailwind grid-span classes for the bento layout. */
   span?: string;
   skills: Skill[];
@@ -36,8 +36,8 @@ const categories: Category[] = [
   },
   {
     title: "AI & ML",
-    featured: true,
-    span: "lg:row-span-2",
+    /* Spans both rows so the Frameworks row does not leave a hole. */
+    span: "sm:row-span-2",
     skills: [
       { name: "PyTorch", icon: "logos:pytorch-icon" },
       { name: "LangChain", fallback: Boxes },
@@ -58,7 +58,8 @@ const categories: Category[] = [
     ],
   },
   {
-    title: "Cloud & Tools",
+    title: "Cloud & tools",
+    span: "sm:col-span-3",
     skills: [
       { name: "AWS", icon: "logos:aws" },
       { name: "Azure", icon: "logos:azure-icon" },
@@ -73,53 +74,36 @@ const categories: Category[] = [
   },
 ];
 
+/** Logo in its own recessed slot, so every mark sits at the same depth. */
 const TechChip = ({ skill }: { skill: Skill }) => {
   const Fallback = skill.fallback;
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary/60 px-3 py-1.5 text-sm transition-smooth hover:scale-105 hover:border-accent">
-      {skill.icon ? (
-        <img
-          src={`https://api.iconify.design/${skill.icon}.svg`}
-          alt={skill.name}
-          loading="lazy"
-          className="h-4 w-4"
-        />
-      ) : Fallback ? (
-        <Fallback className="h-4 w-4 text-accent" />
-      ) : null}
+    <span className="glass-chip gap-2 py-1.5 pl-1.5 pr-3 text-sm">
+      <span className="glass-well flex h-6 w-6 items-center justify-center rounded-lg">
+        {skill.icon ? (
+          <img src={`https://api.iconify.design/${skill.icon}.svg`} alt="" loading="lazy" className="h-3.5 w-3.5" />
+        ) : Fallback ? (
+          <Fallback className="h-3.5 w-3.5 text-ink-3" />
+        ) : null}
+      </span>
       {skill.name}
     </span>
   );
 };
 
-const TechStack = () => {
-  return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {categories.map((category) => (
-        <div
-          key={category.title}
-          className={cn(
-            "block-3d border border-border bg-card p-5",
-            category.span,
-            category.featured &&
-              "bg-gradient-to-br from-accent/10 to-transparent ring-1 ring-accent/40",
-          )}
-        >
-          <div className="mb-4 flex items-center gap-2">
-            <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-              {category.title}
-            </h3>
-            {category.featured && <Sparkles className="h-4 w-4 text-accent" />}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {category.skills.map((skill) => (
-              <TechChip key={skill.name} skill={skill} />
-            ))}
-          </div>
+const TechStack = () => (
+  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    {categories.map((category) => (
+      <GlassPane key={category.title} depth={3} className={cn("p-5", category.span)}>
+        <p className="eyebrow">{category.title}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {category.skills.map((skill) => (
+            <TechChip key={skill.name} skill={skill} />
+          ))}
         </div>
-      ))}
-    </div>
-  );
-};
+      </GlassPane>
+    ))}
+  </div>
+);
 
 export default TechStack;

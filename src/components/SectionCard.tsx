@@ -1,77 +1,59 @@
-import type { LucideIcon } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { forwardRef, type CSSProperties, type ReactNode } from "react";
+import { ArrowUpRight } from "lucide-react";
+import { GlassPane } from "@/components/glass/GlassPane";
+import { cn } from "@/lib/utils";
 
 interface SectionCardProps {
+  /** Mono label. Carries the count, so it does real work. */
+  eyebrow: string;
   title: string;
-  metric: string;
-  metricLabel: string;
-  icon: LucideIcon;
-  itemCount: number;
-  images?: (string | null)[];
+  /** The tile's data expression — differs per section. */
+  children: ReactNode;
+  settleIndex: number;
+  className?: string;
+  style?: CSSProperties;
   onClick: () => void;
 }
 
-export const SectionCard = ({ title, metric, metricLabel, icon, itemCount, images, onClick }: SectionCardProps) => {
-  const Icon = icon;
-  const imageCount = images ? Math.min(images.length, 5) : Math.min(itemCount, 5);
-
-  // Adaptive metric sizing: big punchy numbers, smaller for long phrases so
-  // the text always fits inside the fixed-height tile.
-  const metricSizeClass =
-    metric.length <= 4
-      ? "text-2xl md:text-3xl"
-      : metric.length <= 9
-        ? "text-xl md:text-2xl"
-        : "text-base md:text-lg";
-
+/**
+ * Shared tile chrome: eyebrow, title, then the preview filling whatever is
+ * left. Every tile keeps this rhythm — label, name, evidence — so seven
+ * different previews still scan as one grid.
+ */
+export const SectionCard = forwardRef<HTMLDivElement, SectionCardProps>(function SectionCard(
+  { eyebrow, title, children, settleIndex, className, style, onClick },
+  ref,
+) {
   return (
-    <Card
+    <GlassPane
+      ref={ref}
+      as="button"
+      interactive
+      frost
+      settleIndex={settleIndex}
+      style={style}
       onClick={onClick}
-      className="block-3d group relative h-full cursor-pointer border border-border bg-card rounded-[28px]"
+      aria-label={`Open ${title}`}
+      className={cn(
+        "group flex h-full w-full min-w-0 flex-col overflow-hidden p-4 text-left lg:p-5",
+        className,
+      )}
     >
-      <div className="flex h-full min-h-0 flex-col overflow-hidden p-4 md:p-5 lg:p-6">
-        <div className="mb-2 flex items-start justify-between md:mb-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent/15 text-accent shadow-[inset_0_1px_0_0_hsl(0_0%_100%/0.18),0_8px_16px_-8px_hsl(var(--accent)/0.55)] transition-smooth group-hover:-translate-y-0.5 group-hover:scale-105 md:h-11 md:w-11">
-            <Icon className="h-5 w-5 md:h-6 md:w-6" />
-          </div>
-          
-          {/* Cascaded Images */}
-          <div className="flex items-center -space-x-2 sm:-space-x-3">
-            {Array.from({ length: imageCount }).map((_, i) => (
-              <div
-                key={i}
-                className="relative h-6 w-6 overflow-hidden rounded-full border-2 border-card shadow-md sm:h-7 sm:w-7 lg:h-8 lg:w-8"
-                style={{ zIndex: imageCount - i }}
-              >
-                {images && images[i] ? (
-                  <img 
-                    src={images[i]!} 
-                    alt={`${title} ${i + 1}`}
-                    className="w-full h-full object-contain bg-accent/10"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-accent/40 to-accent/60 flex items-center justify-center">
-                    <span className="text-xs text-accent font-bold">{i + 1}</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        <h2 className="mb-1 mt-auto text-base font-serif font-semibold leading-tight text-foreground md:text-lg xl:text-xl">
-          {title}
-        </h2>
-
-        <div className="min-w-0 space-y-0.5">
-          <div className={`font-serif font-bold leading-tight break-words text-primary ${metricSizeClass}`}>
-            {metric}
-          </div>
-          <p className="text-xs leading-tight text-muted-foreground uppercase tracking-wide">
-            {metricLabel}
-          </p>
-        </div>
+      <div className="flex items-start justify-between gap-3">
+        <span className="eyebrow">{eyebrow}</span>
+        <ArrowUpRight
+          className="h-4 w-4 shrink-0 text-ink-3 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[hsl(var(--accent))]"
+          aria-hidden
+        />
       </div>
-    </Card>
+
+      <h2 className="mt-1 font-display text-[1.0625rem] font-semibold leading-[1.15] tracking-[-0.025em] text-ink lg:text-[1.1875rem]">
+        {title}
+      </h2>
+
+      {/* Previews own their own vertical distribution — a 2x2 hero and a
+          1x1 tile need very different answers to the same empty space. */}
+      <div className="mt-2 flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
+    </GlassPane>
   );
-};
+});
