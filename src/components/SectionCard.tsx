@@ -4,7 +4,7 @@ import { GlassPane } from "@/components/glass/GlassPane";
 import { cn } from "@/lib/utils";
 
 interface SectionCardProps {
-  /** Mono label. Carries the count, so it does real work. */
+  /** Mono label. */
   eyebrow: string;
   title: string;
   /** The tile's data expression — differs per section. */

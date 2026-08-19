@@ -23,8 +23,6 @@ import {
   TechStackPreview,
 } from "@/components/tiles/TilePreviews";
 
-import { experience, extracurriculars, hobbies, projects } from "@/data/portfolio";
-
 type SectionId =
   | "experience"
   | "education"
@@ -36,7 +34,7 @@ type SectionId =
 
 type SectionDefinition = {
   id: SectionId;
-  /** Mono label on the tile. Carries the count, so it does real work. */
+  /** Mono label on the tile. */
   eyebrow: string;
   title: string;
   icon: LucideIcon;
@@ -57,6 +55,7 @@ const CONTAINER_RADIUS = 26;
    pane is still shrinking. */
 const OPEN_MS = 460; // pane grows
 const CONTENT_IN_AT = 60; // content starts arriving, almost immediately
+const CONTENT_IN_MS = OPEN_MS - CONTENT_IN_AT; // 60 + 400 == OPEN_MS, so both land together
 const CLOSE_MS = 400; // pane shrinks
 /* Closing mirrors opening rather than reversing the old two-step. The content
    holds still and full-strength while the shrinking pane clips it away from
@@ -66,12 +65,16 @@ const CLOSE_MS = 400; // pane shrinks
 const CONTENT_OUT_MS = 280;
 const CONTENT_OUT_DELAY = 120; // 120 + 280 == CLOSE_MS, so both land together
 
-const pad = (n: number) => String(n).padStart(2, "0");
+/* The tile underneath stays hidden while its pane is up, then crossfades back
+   in as the pane finishes shrinking onto it — landing together like the
+   content fade above, so the swap never reads as a hard cut. */
+const TILE_IN_MS = 220;
+const TILE_IN_DELAY = CLOSE_MS - TILE_IN_MS; // 180 + 220 == CLOSE_MS
 
 const SECTIONS: SectionDefinition[] = [
   {
     id: "experience",
-    eyebrow: `${pad(experience.length)} — Positions`,
+    eyebrow: "Positions",
     title: "Experience",
     icon: Briefcase,
     area: "sm:col-span-2 lg:col-span-2 lg:row-span-2",
@@ -101,7 +104,7 @@ const SECTIONS: SectionDefinition[] = [
   },
   {
     id: "projects",
-    eyebrow: `${pad(projects.length)} — Shipped`,
+    eyebrow: "Shipped",
     title: "Projects",
     icon: Code,
     area: "lg:col-start-3 lg:row-start-2",
@@ -121,7 +124,7 @@ const SECTIONS: SectionDefinition[] = [
   },
   {
     id: "extracurriculars",
-    eyebrow: `${pad(extracurriculars.length)} — Activities`,
+    eyebrow: "Activities",
     title: "Extracurriculars",
     icon: Users,
     area: "lg:col-start-2 lg:row-start-3",
@@ -131,7 +134,7 @@ const SECTIONS: SectionDefinition[] = [
   },
   {
     id: "hobbies",
-    eyebrow: `${pad(hobbies.length)} — Off the clock`,
+    eyebrow: "Off the clock",
     title: "Hobbies",
     icon: Heart,
     area: "sm:col-span-2 lg:col-span-2 lg:col-start-3 lg:row-start-3",
@@ -141,20 +144,27 @@ const SECTIONS: SectionDefinition[] = [
   },
 ];
 
-/* The panel is CSS-positioned `inset: 0` — it always exactly covers the
-   frame, at any zoom or window size. The morph is a clip-path wipe from the
-   tile's rect out to the full frame, which means:
-     - no absolute pixel geometry is ever stored, so nothing can go stale when
-       the layout changes underneath it (browser zoom was leaving the panel
-       stranded at coordinates captured before the zoom);
-     - the content is laid out at full size from the first frame and never
-       reflows, so the glass reveals it rather than popping it in;
-     - closing re-measures the tile, so it always lands exactly where the tile
-       actually is now, not where it was when the panel opened. */
-const FULL_CLIP = `inset(0px round ${CONTAINER_RADIUS}px)`;
+type Rect = { top: number; right: number; bottom: number; left: number; radius: number };
+
+/* The morph is two coupled layers, not one clip-path:
+     - a "shape" box, resized with real top/right/bottom/left + border-radius.
+       Those are ordinary box properties, so browsers rasterize them fresh
+       every frame — unlike clip-path's `round`, which several engines only
+       render precisely once the shape stops changing, showing square corners
+       for the whole animation and snapping round on the last frame.
+     - a content layer, always the full frame, wiped by a *sharp* clip-path
+       (no round) at the same rect. It doesn't need rounding of its own: it
+       sits inset from the shape by the panel's padding, so its corners never
+       reach the rounded edge, and it stays full-size throughout so text never
+       reflows — the glass reveals it rather than popping it in.
+   Both read from the same Rect, so they always agree on where the tile is.
+   Full-open is the zero-inset case, and that's independent of frame size, so
+   it can be a constant rather than measured per open. */
+const FULL_RECT: Rect = { top: 0, right: 0, bottom: 0, left: 0, radius: CONTAINER_RADIUS };
 
 /**
- * A clip-path covering just this tile's rect within the frame.
+ * The rect of `card` relative to `frame`, in the shape needed for both the
+ * box (top/right/bottom/left) and the content clip (inset()).
  *
  * Deliberately uses layout offsets, not getBoundingClientRect. While a
  * section is open the grid carries `scale(0.98)`, and getBoundingClientRect
@@ -163,7 +173,7 @@ const FULL_CLIP = `inset(0px round ${CONTAINER_RADIUS}px)`;
  * snapped into place when the grid un-scaled, which is the jump at the end of
  * the close. offset* are layout values, so the transform cannot touch them.
  */
-const insetForCard = (frame: HTMLElement | null, card: HTMLElement | null) => {
+const rectForCard = (frame: HTMLElement | null, card: HTMLElement | null): Rect | null => {
   if (!frame || !card) return null;
 
   // Accumulate up the offsetParent chain in case anything between the tile
@@ -181,7 +191,7 @@ const insetForCard = (frame: HTMLElement | null, card: HTMLElement | null) => {
   const right = Math.max(0, frame.clientWidth - left - card.offsetWidth);
   const bottom = Math.max(0, frame.clientHeight - top - card.offsetHeight);
   const radius = parseFloat(window.getComputedStyle(card).borderRadius) || CONTAINER_RADIUS;
-  return `inset(${top}px ${right}px ${bottom}px ${left}px round ${radius}px)`;
+  return { top, right, bottom, left, radius };
 };
 
 const Index = () => {
@@ -194,25 +204,49 @@ const Index = () => {
   const [isClosing, setIsClosing] = useState(false);
   const [showContent, setShowContent] = useState(false);
 
-  const panelRef = useRef<HTMLDivElement>(null);
-  /* Clip is driven straight on the node rather than through state. Going
+  // The decorative glass box: background, blur, rim, shadow. Its own real
+  // geometry is what's animating, so its border-radius (and the rim pseudo
+  // that inherits it) always matches the currently-visible shape exactly.
+  const shapeRef = useRef<HTMLDivElement>(null);
+  // The dialog: header, body, close button. Always full-frame so its content
+  // never reflows; a sharp clip-path (no round — see FULL_RECT above) wipes
+  // it to the same rect the shape box occupies.
+  const clipRef = useRef<HTMLDivElement>(null);
+
+  /* Rect is driven straight onto the nodes rather than through state. Going
      through React meant the start value and the end value could land in the
      same frame — the browser never painted the start, so no transition fired
      and the panel just sat there collapsed over its own hidden tile, which is
      the blank box. Forcing a reflow between the two writes makes the browser
      commit the start value first, every time. */
-  const pendingOpenRef = useRef<string | null>(null);
+  const pendingOpenRef = useRef<Rect | null>(null);
 
-  const applyClip = useCallback((value: string, durationMs: number | null) => {
-    const node = panelRef.current;
-    if (!node) return;
+  const applyRect = useCallback((rect: Rect, durationMs: number | null) => {
+    const shape = shapeRef.current;
+    const clip = clipRef.current;
+    if (!shape || !clip) return;
+    const { top, right, bottom, left, radius } = rect;
     if (durationMs === null) {
-      node.style.transition = "none";
-      node.style.clipPath = value;
-      void node.offsetWidth; // flush, so the next write has something to animate from
+      shape.style.transition = "none";
+      clip.style.transition = "none";
     } else {
-      node.style.transition = `clip-path ${durationMs}ms var(--ease-glass)`;
-      node.style.clipPath = value;
+      shape.style.transition = [
+        `top ${durationMs}ms var(--ease-glass)`,
+        `right ${durationMs}ms var(--ease-glass)`,
+        `bottom ${durationMs}ms var(--ease-glass)`,
+        `left ${durationMs}ms var(--ease-glass)`,
+        `border-radius ${durationMs}ms var(--ease-glass)`,
+      ].join(", ");
+      clip.style.transition = `clip-path ${durationMs}ms var(--ease-glass)`;
+    }
+    shape.style.top = `${top}px`;
+    shape.style.right = `${right}px`;
+    shape.style.bottom = `${bottom}px`;
+    shape.style.left = `${left}px`;
+    shape.style.borderRadius = `${radius}px`;
+    clip.style.clipPath = `inset(${top}px ${right}px ${bottom}px ${left}px)`;
+    if (durationMs === null) {
+      void shape.offsetWidth; // flush, so the next write has something to animate from
     }
   }, []);
 
@@ -222,9 +256,9 @@ const Index = () => {
     const start = pendingOpenRef.current;
     if (!start) return;
     pendingOpenRef.current = null;
-    applyClip(start, null);
-    applyClip(FULL_CLIP, OPEN_MS);
-  }, [applyClip, visibleSection]);
+    applyRect(start, null);
+    applyRect(FULL_RECT, OPEN_MS);
+  }, [applyRect, visibleSection]);
 
   const currentSection = SECTIONS.find((section) => section.id === visibleSection) ?? null;
   const SectionIcon = currentSection?.icon;
@@ -239,7 +273,7 @@ const Index = () => {
 
   const openSection = useCallback((section: SectionId) => {
     // Measured before the tile is hidden, so this is its live position.
-    pendingOpenRef.current = insetForCard(gridRef.current, cardRefs.current[section] ?? null) ?? FULL_CLIP;
+    pendingOpenRef.current = rectForCard(gridRef.current, cardRefs.current[section] ?? null) ?? FULL_RECT;
 
     setIsClosing(false);
     setShowContent(false);
@@ -254,10 +288,10 @@ const Index = () => {
       setShowContent(false);
       setIsClosing(true);
 
-      const node = panelRef.current;
+      const node = shapeRef.current;
       // Re-measured now rather than reused from open, so the pane lands on the
       // tile wherever it currently sits — even if the window or zoom changed.
-      const target = insetForCard(gridRef.current, cardRefs.current[section] ?? null) ?? FULL_CLIP;
+      const target = rectForCard(gridRef.current, cardRefs.current[section] ?? null) ?? FULL_RECT;
 
       const finish = () => {
         if (closeTimeoutRef.current) window.clearTimeout(closeTimeoutRef.current);
@@ -271,20 +305,22 @@ const Index = () => {
 
       // Hand the tile back the frame the pane lands, not a timer's guess at it.
       // A stale timer is what left an empty glass rectangle sitting on a
-      // still-hidden tile for the last stretch of the close.
+      // still-hidden tile for the last stretch of the close. Keyed off "left"
+      // specifically — all five shape properties finish together, but
+      // transitionend fires once per property, so any single one will do.
       function handleEnd(event: TransitionEvent) {
-        if (event.target === node && event.propertyName === "clip-path") finish();
+        if (event.target === node && event.propertyName === "left") finish();
       }
 
       node?.addEventListener("transitionend", handleEnd);
-      applyClip(target, CLOSE_MS);
+      applyRect(target, CLOSE_MS);
 
       // Fallback: transitionend never fires under reduced motion or in a
       // backgrounded tab.
       if (closeTimeoutRef.current) window.clearTimeout(closeTimeoutRef.current);
       closeTimeoutRef.current = window.setTimeout(finish, CLOSE_MS + 120);
     },
-    [applyClip],
+    [applyRect],
   );
 
   const handleCardClick = (section: SectionId) => {
@@ -339,89 +375,108 @@ const Index = () => {
               transitionDuration: `${isClosing ? CLOSE_MS : OPEN_MS}ms`,
             }}
           >
-            {SECTIONS.map((section, index) => (
-              <SectionCard
-                key={section.id}
-                ref={(node) => {
-                  cardRefs.current[section.id] = node;
-                }}
-                eyebrow={section.eyebrow}
-                title={section.title}
-                settleIndex={index + 2}
-                className={`min-h-[11.5rem] lg:min-h-0 ${section.area}`}
-                onClick={() => handleCardClick(section.id)}
-                /* Hidden while its own pane is lifted off — the overlay is
-                   standing in for it, so two copies must never show at once. */
-                style={{ visibility: visibleSection === section.id ? "hidden" : "visible" }}
-              >
-                {section.preview}
-              </SectionCard>
-            ))}
+            {SECTIONS.map((section, index) => {
+              // Hidden while its own pane is lifted off — the overlay stands
+              // in for it. Opening hides it instantly (the pane starts
+              // already covering it exactly); closing crossfades it back in
+              // timed to land as the pane finishes shrinking onto it, so the
+              // swap never reads as a pop.
+              const isLifted = visibleSection === section.id;
+              const tileHidden = isLifted && !isClosing;
+              return (
+                <SectionCard
+                  key={section.id}
+                  ref={(node) => {
+                    cardRefs.current[section.id] = node;
+                  }}
+                  eyebrow={section.eyebrow}
+                  title={section.title}
+                  settleIndex={index + 2}
+                  className={`min-h-[11.5rem] lg:min-h-0 ${section.area}`}
+                  onClick={() => handleCardClick(section.id)}
+                  style={{
+                    opacity: tileHidden ? 0 : 1,
+                    pointerEvents: isLifted ? "none" : "auto",
+                    transition: tileHidden
+                      ? "none"
+                      : `opacity ${TILE_IN_MS}ms var(--ease-glass) ${TILE_IN_DELAY}ms`,
+                  }}
+                >
+                  {section.preview}
+                </SectionCard>
+              );
+            })}
           </div>
 
           {visibleSection && (
-            <div
-              role="dialog"
-              aria-modal="true"
-              aria-label={currentSection?.title}
-              ref={panelRef}
-              className={`glass glass-panel absolute inset-0 z-20 flex flex-col overflow-hidden ${
-                isClosing ? "pointer-events-none" : "pointer-events-auto"
-              }`}
-              style={{
-                clipPath: FULL_CLIP,
-                padding: "clamp(1rem, 2vw, 1.75rem)",
-                willChange: "clip-path",
-              }}
-            >
+            <>
+              {/* The glass itself: background, blur, rim, shadow. Real
+                  top/right/bottom/left + border-radius, so it's an ordinary
+                  resizing box rather than a clip mask — see the Rect comment
+                  above for why that's what keeps the corners honest. */}
+              <div ref={shapeRef} aria-hidden className="glass glass-panel absolute z-20 pointer-events-none" />
+
               <div
-                className="flex min-h-0 flex-1 flex-col"
+                role="dialog"
+                aria-modal="true"
+                aria-label={currentSection?.title}
+                ref={clipRef}
+                className={`absolute inset-0 z-20 flex flex-col overflow-hidden ${
+                  isClosing ? "pointer-events-none" : "pointer-events-auto"
+                }`}
                 style={{
-                  opacity: showContent ? 1 : 0,
-                  transition: showContent
-                    ? "opacity 300ms var(--ease-glass)"
-                    : `opacity ${CONTENT_OUT_MS}ms ease-in ${CONTENT_OUT_DELAY}ms`,
+                  padding: "clamp(1rem, 2vw, 1.75rem)",
                 }}
-                aria-hidden={!showContent}
               >
-                {/* Header shares the content's measure so the title, the
-                    close button, and every card below sit on one column. */}
                 <div
-                  className={`mx-auto mb-5 flex w-full items-start justify-between gap-4 ${
-                    currentSection?.measure ?? "max-w-4xl"
-                  }`}
+                  className="flex min-h-0 flex-1 flex-col"
+                  style={{
+                    opacity: showContent ? 1 : 0,
+                    transition: showContent
+                      ? `opacity ${CONTENT_IN_MS}ms var(--ease-glass)`
+                      : `opacity ${CONTENT_OUT_MS}ms ease-in ${CONTENT_OUT_DELAY}ms`,
+                  }}
+                  aria-hidden={!showContent}
                 >
-                  <div className="flex min-w-0 items-start gap-3.5">
-                    {SectionIcon && (
-                      <span className="glass-well flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl">
-                        <SectionIcon className="h-5 w-5 text-ink-2" aria-hidden />
-                      </span>
-                    )}
-                    <div className="min-w-0">
-                      <p className="eyebrow">{currentSection?.eyebrow}</p>
-                      <h2 className="mt-0.5 font-display text-2xl font-bold tracking-[-0.03em] text-ink sm:text-3xl">
-                        {currentSection?.title}
-                      </h2>
+                  {/* Header shares the content's measure so the title, the
+                      close button, and every card below sit on one column. */}
+                  <div
+                    className={`mx-auto mb-5 flex w-full items-start justify-between gap-4 ${
+                      currentSection?.measure ?? "max-w-4xl"
+                    }`}
+                  >
+                    <div className="flex min-w-0 items-start gap-3.5">
+                      {SectionIcon && (
+                        <span className="glass-well flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl">
+                          <SectionIcon className="h-5 w-5 text-ink-2" aria-hidden />
+                        </span>
+                      )}
+                      <div className="min-w-0">
+                        <p className="eyebrow">{currentSection?.eyebrow}</p>
+                        <h2 className="mt-0.5 font-display text-2xl font-bold tracking-[-0.03em] text-ink sm:text-3xl">
+                          {currentSection?.title}
+                        </h2>
+                      </div>
                     </div>
+
+                    <button
+                      type="button"
+                      onClick={handleClose}
+                      className="glass-chip shrink-0 p-2.5 hover:text-ink"
+                      aria-label="Close section"
+                    >
+                      <X className="h-4 w-4" aria-hidden />
+                    </button>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={handleClose}
-                    className="glass-chip shrink-0 p-2.5 hover:text-ink"
-                    aria-label="Close section"
-                  >
-                    <X className="h-4 w-4" aria-hidden />
-                  </button>
-                </div>
-
-                <div className="-mr-1 min-h-0 flex-1 overflow-y-auto pr-1 sm:-mr-2 sm:pr-2">
-                  <div className={`mx-auto w-full ${currentSection?.measure ?? "max-w-4xl"}`}>
-                    {currentSection?.body}
+                  <div className="-mr-1 min-h-0 flex-1 overflow-y-auto pr-1 sm:-mr-2 sm:pr-2">
+                    <div className={`mx-auto w-full ${currentSection?.measure ?? "max-w-4xl"}`}>
+                      {currentSection?.body}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </>
           )}
         </GlassPane>
       </main>
