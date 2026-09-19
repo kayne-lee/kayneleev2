@@ -1,4 +1,5 @@
 import { GlassWell } from "@/components/glass/GlassWell";
+import { iconUrl } from "@/assets/icons";
 import { current, education, experience, extracurriculars, hobbies, projects } from "@/data/portfolio";
 
 /**
@@ -27,7 +28,7 @@ export const ExperiencePreview = () => (
   <ul className="flex h-full flex-col justify-between gap-1">
     {experience.map((job) => (
       <li key={job.id} className="flex min-w-0 items-center gap-3">
-        <GlassWell src={job.image} alt="" className="h-9 w-9 rounded-xl lg:h-10 lg:w-10" />
+        <GlassWell image={job.image} alt="" sizes="40px" eager className="h-9 w-9 rounded-xl lg:h-10 lg:w-10" />
 
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-1.5 truncate text-sm font-medium text-ink">
@@ -81,9 +82,11 @@ export const TechStackPreview = () => (
       {LATTICE.map((slug) => (
         <div key={slug} className="glass-well flex items-center justify-center rounded-lg">
           <img
-            src={`https://api.iconify.design/${slug}.svg`}
+            src={iconUrl(slug)}
             alt=""
-            loading="lazy"
+            width={32}
+            height={32}
+            decoding="async"
             className="h-7 w-7 object-contain lg:h-8 lg:w-8"
           />
         </div>
@@ -158,7 +161,7 @@ export const ExtracurricularsPreview = () => (
     {extracurriculars.map((activity) => (
       <li key={activity.id} className="flex min-w-0 flex-1 flex-col justify-end gap-2">
         <div className="relative min-h-0 w-full max-w-[3.75rem] flex-1">
-          <GlassWell src={activity.image} alt="" className="h-full w-full rounded-xl" />
+          <GlassWell image={activity.image} alt="" sizes="60px" eager className="h-full w-full rounded-xl" />
           {/* `.live-dot` sets its own `position: relative` for the pulse
               ring, so the wrapper carries the placement. */}
           {activity.current && (
@@ -184,7 +187,7 @@ export const ExtracurricularsPreview = () => (
 export const HobbiesPreview = () => (
   <div className="flex h-full items-stretch gap-1.5 sm:gap-2">
     {hobbies.map((hobby) => (
-      <GlassWell key={hobby.id} src={hobby.image} alt="" cover className="h-full flex-1 rounded-xl" />
+      <GlassWell key={hobby.id} image={hobby.image} alt="" cover sizes="120px" eager className="h-full flex-1 rounded-xl" />
     ))}
   </div>
 );

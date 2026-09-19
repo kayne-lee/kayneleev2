@@ -43,7 +43,7 @@ export const RecordCard = ({
 }: RecordCardProps) => (
   <GlassPane depth={3} className="p-4 sm:p-5">
     <div className="flex flex-col gap-4 sm:flex-row">
-      {image && <GlassWell src={image} alt="" className="h-14 w-14 rounded-2xl sm:h-16 sm:w-16" />}
+      {image && <GlassWell image={image} alt="" sizes="64px" className="h-14 w-14 rounded-2xl sm:h-16 sm:w-16" />}
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">

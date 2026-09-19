@@ -2,6 +2,7 @@ import { Boxes, Database } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { GlassPane } from "@/components/glass/GlassPane";
 import { cn } from "@/lib/utils";
+import { iconUrl } from "@/assets/icons";
 
 type Skill = {
   name: string;
@@ -81,7 +82,7 @@ const TechChip = ({ skill }: { skill: Skill }) => {
     <span className="glass-chip gap-2 py-1.5 pl-1.5 pr-3 text-sm">
       <span className="glass-well flex h-6 w-6 items-center justify-center rounded-lg">
         {skill.icon ? (
-          <img src={`https://api.iconify.design/${skill.icon}.svg`} alt="" loading="lazy" className="h-3.5 w-3.5" />
+          <img src={iconUrl(skill.icon)} alt="" width={14} height={14} loading="lazy" decoding="async" className="h-3.5 w-3.5" />
         ) : Fallback ? (
           <Fallback className="h-3.5 w-3.5 text-ink-3" />
         ) : null}

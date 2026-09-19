@@ -1,18 +1,10 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Briefcase, Calendar, Code, GraduationCap, Heart, Users, Wrench, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { SectionCard } from "@/components/SectionCard";
 import { GlassPane } from "@/components/glass/GlassPane";
-import TechStack from "@/components/TechStack";
-
-import { EducationSection } from "@/components/sections/EducationSection";
-import { ExperienceSection } from "@/components/sections/ExperienceSection";
-import { ExtracurricularsSection } from "@/components/sections/ExtracurricularsSection";
-import { HobbiesSection } from "@/components/sections/HobbiesSection";
-import { NowSection } from "@/components/sections/NowSection";
-import { ProjectsSection } from "@/components/sections/ProjectsSection";
 import {
   EducationPreview,
   ExperiencePreview,
@@ -22,6 +14,50 @@ import {
   ProjectsPreview,
   TechStackPreview,
 } from "@/components/tiles/TilePreviews";
+import { SectionFallback } from "@/components/SectionFallback";
+
+
+/**
+ * Section bodies are code-split. They only mount once a tile is opened, so
+ * keeping them in the initial chunk meant every visitor downloaded all seven
+ * plus the whole content file to look at a grid of previews.
+ */
+const EducationSection = lazy(() =>
+  import("@/components/sections/EducationSection").then((m) => ({ default: m.EducationSection })),
+);
+const ExperienceSection = lazy(() =>
+  import("@/components/sections/ExperienceSection").then((m) => ({ default: m.ExperienceSection })),
+);
+const ExtracurricularsSection = lazy(() =>
+  import("@/components/sections/ExtracurricularsSection").then((m) => ({ default: m.ExtracurricularsSection })),
+);
+const HobbiesSection = lazy(() =>
+  import("@/components/sections/HobbiesSection").then((m) => ({ default: m.HobbiesSection })),
+);
+const NowSection = lazy(() =>
+  import("@/components/sections/NowSection").then((m) => ({ default: m.NowSection })),
+);
+const ProjectsSection = lazy(() =>
+  import("@/components/sections/ProjectsSection").then((m) => ({ default: m.ProjectsSection })),
+);
+const TechStack = lazy(() => import("@/components/TechStack"));
+
+/**
+ * Warm the section chunks once the browser is idle. The point of splitting them
+ * out is to keep them off the critical path, not to make the first tile click
+ * wait on a network round trip — by the time anyone opens a tile these are
+ * usually already cached.
+ */
+const prefetchSections = () => {
+  void import("@/components/sections/ExperienceSection");
+  void import("@/components/sections/EducationSection");
+  void import("@/components/TechStack");
+  void import("@/components/sections/ProjectsSection");
+  void import("@/components/sections/NowSection");
+  void import("@/components/sections/ExtracurricularsSection");
+  void import("@/components/sections/HobbiesSection");
+};
+
 
 type SectionId =
   | "experience"
@@ -203,6 +239,16 @@ const Index = () => {
   const [visibleSection, setVisibleSection] = useState<SectionId | null>(null);
   const [isClosing, setIsClosing] = useState(false);
   const [showContent, setShowContent] = useState(false);
+
+  // Prefetch the split-out section chunks when the main thread goes quiet.
+  useEffect(() => {
+    const idle = window.requestIdleCallback?.(prefetchSections, { timeout: 3000 });
+    const timer = idle === undefined ? window.setTimeout(prefetchSections, 1500) : undefined;
+    return () => {
+      if (idle !== undefined) window.cancelIdleCallback?.(idle);
+      if (timer !== undefined) window.clearTimeout(timer);
+    };
+  }, []);
 
   // The decorative glass box: background, blur, rim, shadow. Its own real
   // geometry is what's animating, so its border-radius (and the rim pseudo
@@ -471,7 +517,7 @@ const Index = () => {
 
                   <div className="-mr-1 min-h-0 flex-1 overflow-y-auto pr-1 sm:-mr-2 sm:pr-2">
                     <div className={`mx-auto w-full ${currentSection?.measure ?? "max-w-4xl"}`}>
-                      {currentSection?.body}
+                      <Suspense fallback={<SectionFallback />}>{currentSection?.body}</Suspense>
                     </div>
                   </div>
                 </div>

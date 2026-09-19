@@ -14,13 +14,18 @@ export const DashboardHeader = () => (
     className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6"
   >
     <div className="flex min-w-0 items-center gap-4">
+      {/* The LCP candidate — it must not queue behind the tile grid's images. */}
       <div className="glass-well h-14 w-14 shrink-0 rounded-full sm:h-16 sm:w-16">
         <img
-          src={identity.headshot}
+          src={identity.headshot.img.src}
+          srcSet={identity.headshot.sources.webp}
+          sizes="64px"
           alt=""
           className="h-full w-full object-cover"
-          width={64}
-          height={64}
+          width={identity.headshot.img.w}
+          height={identity.headshot.img.h}
+          fetchPriority="high"
+          decoding="async"
         />
       </div>
 

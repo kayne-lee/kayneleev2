@@ -2,12 +2,16 @@
  * All site content. Kept out of the components so the dashboard shell stays
  * about layout and motion, and copy edits never touch JSX.
  *
- * Image paths are all root-absolute (`/foo.png`) — they resolve from `public/`.
+ * Images come from `@/assets/images`, which resizes and converts them to WebP
+ * at build time. They are objects (srcset + fallback + intrinsic size), not
+ * paths — hand them to <GlassWell image={...}>.
  */
+import { IMAGES } from "@/assets/images";
+
 
 export const identity = {
   name: "Kayne Lee",
-  headshot: "/headshot.jpg",
+  headshot: IMAGES.headshot,
   role: "Software Engineer Intern",
   company: "Microsoft",
   study: "Computer Engineering, Queen's University",
@@ -49,7 +53,7 @@ export const experience: Job[] = [
       "Scoped agent tool calls to each user's own data access, enforcing per-user authorization across tenants.",
       "Cut false positives 17% with stacked LightGBM ensembles; sampling cut explainer compute 62%.",
     ],
-    image: "/ms.png",
+    image: IMAGES.ms,
     current: true,
   },
   {
@@ -60,7 +64,7 @@ export const experience: Job[] = [
     shortPeriod: "2025",
     description:
       "Engineered an enterprise agentic AI platform in Markham, ON using LangGraph, hybrid retrieval, and protocol-based tool routing to support 5,000+ internal users. Enabled the A2A protocol between specialized agents, allowing them to share context, delegate tasks, and coordinate multi-step workflows across enterprise systems. Built failure-mode detection, safe fallback routing, and latency tests for distributed agent workflows, reducing critical errors by 23% while improving reliability.",
-    image: "/ibm.png",
+    image: IMAGES.ibm,
   },
   {
     id: 3,
@@ -70,7 +74,7 @@ export const experience: Job[] = [
     shortPeriod: "2025",
     description:
       "Built a Qdrant-powered semantic retrieval layer to normalize and match messy holding names to canonical entities, improving downstream scoring accuracy for a financial commerce product. Developed risk and benchmark comparison logic that transforms raw data into decision-ready scores and insights. Automated AWS Lambda ingestion and scoring pipelines, cutting manual work by 60% while improving throughput.",
-    image: "/as.png",
+    image: IMAGES.as,
   },
   {
     id: 4,
@@ -80,7 +84,7 @@ export const experience: Job[] = [
     shortPeriod: "2025",
     description:
       "Reduced project tracking time by half by launching a Django MVC system that supported more than one hundred and fifty active projects through Dockerized Linux deployments, creating a reliable and scalable foundation for operations. I also rolled out an internal LLM and RAG portal to over two hundred employees with curated indexing and access controls, which made finding the right information much faster and led to a major improvement in team decision making. This helped shorten knowledge lookup time by seventy percent and created smoother collaboration across different groups.",
-    image: "/sp.jpg",
+    image: IMAGES.sp,
   },
   {
     id: 5,
@@ -90,7 +94,7 @@ export const experience: Job[] = [
     shortPeriod: "2024",
     description:
       "Achieved a detection accuracy of ninety seven percent on over three hundred thousand images by training and calibrating YOLOv10X across San Francisco and Washington, D.C. camera feeds, enabling a ten million dollar revenue recovery pipeline. Iteration speed was accelerated through the orchestration of a complete vision ETL process covering ingestion, cleaning, normalization, annotation, and augmentation, which resulted in fully automated retraining workflows and faster model improvement cycles.",
-    image: "/st.png",
+    image: IMAGES.st,
   },
 ];
 
@@ -137,7 +141,7 @@ export const projects: Project[] = [
       "Built by students for students. Nucleus parses syllabi to pull key dates and deliverables, auto-generates a weekly task view, lets you add custom task tiles, syncs deadlines to your calendar, and tracks grades with what-if scenarios. React frontend talks to a Spring Boot API and a Node email service, packaged with Docker and secured with JWT.",
     tech: ["React", "Spring Boot", "Java 17", "Node.js", "SMTP", "PostgreSQL", "Docker", "JWT"],
     link: "github.com/kayne-lee/nucleusapp",
-    image: "/nucleus.png",
+    image: IMAGES.nucleus,
   },
   {
     id: 2,
@@ -147,7 +151,7 @@ export const projects: Project[] = [
       "Developed a Python application using OpenCV and MediaPipe that enables hands-free typing by recognizing hand gestures through a webcam. Integrated a virtual keyboard with predictive text and auto-correction, achieving 95% gesture accuracy and a 30% increase in typing speed for users with limited mobility. The system supports customizable layouts, gesture sensitivity, and multiple languages for a responsive and accessible user experience.",
     tech: ["Python", "OpenCV", "MediaPipe"],
     link: "github.com/kayne-lee/Computer-Vision-Keyboard",
-    image: "/cv.png",
+    image: IMAGES.cv,
   },
   {
     id: 3,
@@ -157,7 +161,7 @@ export const projects: Project[] = [
       "Developed a Next.js application that enables user-generated video uploads, integrating Amazon S3 for efficient storage and achieving a 50% reduction in server load and 20% faster upload speeds. Implemented a dynamic captioning feature using Amazon Transcribe, allowing users to personalize captions with adjustable fonts, colors, and positioning. The system provides a smooth video-to-text conversion pipeline with customizable styling options.",
     tech: ["AWS", "Next.js", "S3", "Amazon Transcribe"],
     link: "github.com/kayne-lee/Caption-Creator",
-    image: "/cg.png",
+    image: IMAGES.cg,
   },
   {
     id: 4,
@@ -167,47 +171,47 @@ export const projects: Project[] = [
       "Built a Numerai trading pipeline that ranked Top 20 in North America over 3 months, generating roughly 60% returns. Used Numerai's API to parse and organize the data, then trained a LightGBM model with era-based validation to improve robustness and reduce overfitting under shifting market regimes.",
     tech: ["Python", "LightGBM", "scikit-learn", "NumerAI"],
     link: "github.com/kayne-lee/NumerAI-Model",
-    image: "/nm.png",
+    image: IMAGES.nm,
   },
 ];
 
 export type Hobby = { id: number; title: string; description: string; image: string };
 
 export const hobbies: Hobby[] = [
-  { id: 1, title: "Football", description: "Varsity High School Football Team", image: "/Football.png" },
+  { id: 1, title: "Football", description: "Varsity High School Football Team", image: IMAGES.Football },
   {
     id: 2,
     title: "Hockey",
     description: "Kincardine Minor Hockey Team & Guelph Gryphons Hockey Team",
-    image: "/Hockey.png",
+    image: IMAGES.Hockey,
   },
   {
     id: 3,
     title: "Skating",
     description:
       "Love skateboarding and longboarding. It's a great way to stay active and cruise around the city.",
-    image: "/Skate.png",
+    image: IMAGES.Skate,
   },
   {
     id: 4,
     title: "Shoe Collection",
     description:
       "Love collecting shoes and adding new ones to my collection. It's a great way to express my style and personality. (Air Jordan 1 Obsidian's are my favorite)",
-    image: "/Shoe.png",
+    image: IMAGES.Shoe,
   },
   {
     id: 5,
     title: "Fitness & Working Out",
     description:
       "Dedicated to maintaining a healthy lifestyle through regular gym sessions, weightlifting, and various fitness routines.",
-    image: "/Workout.png",
+    image: IMAGES.Workout,
   },
   {
     id: 6,
     title: "Hiking",
     description:
       "Love getting outdoors and exploring trails. Hiking is a great way to disconnect, take in some scenery, and reset.",
-    image: "/hiking.JPG",
+    image: IMAGES.hiking,
   },
 ];
 
@@ -232,7 +236,7 @@ export const extracurriculars: Activity[] = [
     shortPeriod: "2024 — 2026",
     description:
       "Led technical execution across 4 teams, mentoring 10+ engineers and driving architecture decisions. Standardized debugging, review, and delivery practices to improve consistency and overall quality across teams.",
-    image: "/QTMA.png",
+    image: IMAGES.QTMA,
   },
   {
     id: 2,
@@ -242,7 +246,7 @@ export const extracurriculars: Activity[] = [
     shortPeriod: "2023 — 2024",
     description:
       "Engineered the QMIND.ca website. Implemented the front end using Next.js and backend system of Supabase to allow users to sign in with JWT authentication system and submit their projects for display on the website.",
-    image: "/QMIND.png",
+    image: IMAGES.QMIND,
   },
   {
     id: 3,
@@ -252,7 +256,7 @@ export const extracurriculars: Activity[] = [
     shortPeriod: "2023 — 2025",
     description:
       "Operated after ILC administration hours to keep the facility open to students, promote a positive studying and learning atmosphere, and act as a resource to undergraduate students for academic courses.",
-    image: "/ICONS.png",
+    image: IMAGES.ICONS,
   },
 ];
 
@@ -285,7 +289,7 @@ export const current = {
       author: "James Clear",
       description: "Building good habits and breaking bad ones.",
       progress: 50,
-      image: "/ah.jpg",
+      image: IMAGES.ah,
     },
     {
       id: 2,
@@ -295,7 +299,7 @@ export const current = {
       description:
         "2nd edition by Sam Bhagwat, cofounder and CEO of Mastra.ai. Deep dive into AI agent development.",
       progress: 40,
-      image: "/aia.jpg",
+      image: IMAGES.aia,
     },
   ],
   music: [

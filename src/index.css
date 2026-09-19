@@ -176,6 +176,17 @@
   .orb {
     position: absolute;
     border-radius: 50%;
+    /* Each orb is a large, blurred, permanently-animating surface that ~9
+       frosted panes sample every frame. Promoting it to its own layer keeps
+       that work off the rest of the page. */
+    will-change: transform;
+    contain: paint;
+  }
+
+  /* Nothing is visible, so stop paying for the animation. Set from JS on
+     visibilitychange — CSS alone cannot see tab visibility. */
+  :root[data-page-hidden="true"] .orb {
+    animation-play-state: paused;
   }
 
   /* Cobalt swoosh, upper right. Squashed off-circle and rotated so it reads as
@@ -330,8 +341,8 @@
      wants this; the small repeated bits (chips) deliberately do not, since the
      blur cannot read at that size and there can be dozens on screen. */
   .glass-frost {
-    backdrop-filter: blur(30px) saturate(155%);
-    -webkit-backdrop-filter: blur(30px) saturate(155%);
+    backdrop-filter: blur(16px) saturate(155%);
+    -webkit-backdrop-filter: blur(16px) saturate(155%);
   }
 
   .glass-1 {
@@ -351,8 +362,6 @@
   .glass-3 {
     background-color: rgb(var(--pane-3));
     border-radius: 18px;
-    backdrop-filter: blur(22px) saturate(150%);
-    -webkit-backdrop-filter: blur(22px) saturate(150%);
     box-shadow:
       inset 0 1px 0 0 rgb(255 255 255 / 0.62),
       inset 0 -1px 0 0 rgb(255 255 255 / 0.14),

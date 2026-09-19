@@ -38,7 +38,7 @@ export const NowSection = () => (
       <div className="grid gap-3 md:grid-cols-2">
         {current.books.map((book) => (
           <GlassPane key={book.id} depth={3} className="flex gap-4 p-4">
-            <GlassWell src={book.image} alt="" cover className="h-[4.5rem] w-12 rounded-lg" />
+            <GlassWell image={book.image} alt="" cover sizes="48px" className="h-[4.5rem] w-12 rounded-lg" />
             <div className="flex min-w-0 flex-1 flex-col">
               <h3 className="font-display text-base font-semibold tracking-[-0.02em] text-ink">
                 {book.title}
