@@ -3,7 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AmbientField } from "@/components/glass/AmbientField";
+import { GrainField } from "@/components/site/GrainField";
+import { VIEWS } from "@/components/site/sections";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -12,12 +13,15 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <AmbientField />
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <GrainField />
         <Routes>
-          <Route path="/" element={<Index />} />
+          {/* One route per page; Index picks what to show from the path. */}
+          {VIEWS.map((view) => (
+            <Route key={view.id} path={view.path} element={<Index />} />
+          ))}
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

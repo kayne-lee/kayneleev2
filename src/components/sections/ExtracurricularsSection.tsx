@@ -1,10 +1,10 @@
-import { RecordCard } from "@/components/sections/RecordCard";
+import { Entry } from "@/components/site/Entry";
 import { extracurriculars } from "@/data/portfolio";
 
 export const ExtracurricularsSection = () => (
-  <div className="space-y-4">
+  <div>
     {extracurriculars.map((activity) => (
-      <RecordCard
+      <Entry
         key={activity.id}
         image={activity.image}
         title={activity.title}

@@ -1,16 +1,16 @@
-import { RecordCard } from "@/components/sections/RecordCard";
+import { Entry } from "@/components/site/Entry";
 import { experience } from "@/data/portfolio";
 
 export const ExperienceSection = () => (
-  <div className="space-y-4">
+  <div>
     {experience.map((job) => (
-      <RecordCard
+      <Entry
         key={job.id}
         image={job.image}
         title={job.title}
         subtitle={job.company}
-        meta={job.period}
         location={job.location}
+        meta={job.period}
         body={job.description}
         bullets={job.bullets}
         current={job.current}

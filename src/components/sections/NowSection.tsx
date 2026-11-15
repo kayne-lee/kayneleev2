@@ -1,101 +1,107 @@
+import type { ReactNode } from "react";
 import { ArrowUpRight } from "lucide-react";
-import { GlassPane } from "@/components/glass/GlassPane";
-import { GlassChip } from "@/components/glass/GlassChip";
-import { GlassWell } from "@/components/glass/GlassWell";
+import { Mark } from "@/components/site/Mark";
 import { current } from "@/data/portfolio";
 
-const Group = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <section className="space-y-3">
-    <p className="eyebrow">{label}</p>
-    {children}
+const Group = ({ title, className, children }: { title: string; className?: string; children: ReactNode }) => (
+  <section className={className}>
+    <h3 className="font-display text-xl font-semibold tracking-[-0.02em] text-ink sm:text-[1.375rem]">{title}</h3>
+    <div className="mt-4">{children}</div>
   </section>
 );
 
 export const NowSection = () => (
-  <div className="space-y-7">
-    <Group label="Building">
-      <div className="grid gap-3 md:grid-cols-2">
+  <div className="grid gap-x-10 gap-y-11 md:grid-cols-2">
+    <Group title="Building">
+      <ul className="space-y-6">
         {current.projects.map((project, index) => (
-          <GlassPane key={project.id} depth={3} className="p-4">
-            <div className="flex items-center gap-2">
-              {index === 0 && <span className="live-dot shrink-0" aria-hidden />}
-              <h3 className="font-display text-base font-semibold tracking-[-0.02em] text-ink">
-                {project.title}
-              </h3>
-            </div>
-            <p className="mt-1.5 max-w-[60ch] text-[0.9375rem] leading-relaxed text-ink-2">{project.description}</p>
-            <div className="mt-3 flex flex-wrap gap-1.5">
+          <li key={project.id}>
+            <h4 className="flex items-center gap-2.5 font-sans text-base font-semibold tracking-normal text-ink">
+              {index === 0 && <span className="now-dot" aria-hidden />}
+              {project.title}
+            </h4>
+            <p className="mt-1.5 text-[0.9688rem] leading-[1.6] text-ink-2">{project.description}</p>
+            <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Built with">
               {project.tech.map((tech) => (
-                <GlassChip key={tech}>{tech}</GlassChip>
+                <li key={tech} className="tag">
+                  {tech}
+                </li>
               ))}
-            </div>
-          </GlassPane>
+            </ul>
+          </li>
         ))}
-      </div>
+      </ul>
     </Group>
 
-    <Group label="Reading">
-      <div className="grid gap-3 md:grid-cols-2">
+    <Group title="Reading">
+      <ul className="space-y-6">
         {current.books.map((book) => (
-          <GlassPane key={book.id} depth={3} className="flex gap-4 p-4">
-            <GlassWell image={book.image} alt="" cover sizes="48px" className="h-[4.5rem] w-12 rounded-lg" />
+          <li key={book.id} className="flex gap-4">
+            <Mark image={book.image} cover sizes="56px" className="h-[5.25rem] w-14 !rounded-lg" />
             <div className="flex min-w-0 flex-1 flex-col">
-              <h3 className="font-display text-base font-semibold tracking-[-0.02em] text-ink">
-                {book.title}
-              </h3>
-              <p className="font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-ink-3">
-                {book.author}
-              </p>
-              <p className="mt-1.5 text-sm leading-snug text-ink-2">{book.description}</p>
-
-              <div className="mt-auto flex items-center gap-2 pt-3">
-                <div className="glass-meter flex-1">
+              <h4 className="font-sans text-base font-semibold leading-snug tracking-normal text-ink">{book.title}</h4>
+              <p className="text-sm text-ink-3">{book.author}</p>
+              <p className="mt-1.5 text-[0.9375rem] leading-snug text-ink-2">{book.description}</p>
+              <div className="mt-auto flex items-center gap-3 pt-3">
+                <div
+                  className="meter flex-1"
+                  role="progressbar"
+                  aria-label={`Progress through ${book.shortTitle}`}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={book.progress}
+                >
                   <span style={{ width: `${book.progress}%` }} />
                 </div>
-                <span className="font-mono text-[0.625rem] tabular-nums text-ink-3">{book.progress}%</span>
+                <span className="text-[0.8125rem] tabular-nums text-ink-3">{book.progress}%</span>
               </div>
             </div>
-          </GlassPane>
+          </li>
         ))}
-      </div>
+      </ul>
     </Group>
 
-    <Group label="Training">
-      <GlassPane depth={3} className="divide-y divide-[hsl(var(--border))] p-1">
+    <Group title="Training" className="md:col-span-2">
+      <dl className="border-b border-ink/10">
         {current.gymProgress.map((stat) => (
           <div
             key={stat.label}
-            className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
+            className="flex flex-col gap-0.5 border-t border-ink/10 py-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-8"
           >
-            <span className="font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-ink-3">
-              {stat.label}
-            </span>
-            <span className="text-[0.9375rem] text-ink-2 sm:text-right">{stat.value}</span>
+            <dt className="shrink-0 text-[0.9375rem] text-ink-3">{stat.label}</dt>
+            <dd className="text-[0.9688rem] font-medium text-ink sm:text-right">{stat.value}</dd>
           </div>
         ))}
-      </GlassPane>
+      </dl>
     </Group>
 
-    <Group label="On repeat">
-      <div className="flex flex-wrap gap-2">
+    <Group title="On repeat">
+      <ul className="space-y-2.5">
         {current.music.map((song) => (
-          <GlassChip key={song.title} href={song.link} mono={false}>
-            <span className="font-medium text-ink">{song.title}</span>
-            <span className="text-ink-3">{song.artist}</span>
-            <ArrowUpRight className="h-3.5 w-3.5 text-ink-3" aria-hidden />
-          </GlassChip>
+          <li key={song.title}>
+            <a
+              href={song.link}
+              target="_blank"
+              rel="noreferrer"
+              className="group inline-flex flex-wrap items-baseline gap-x-2 text-[0.9688rem]"
+            >
+              <span className="text-link">{song.title}</span>
+              <span className="text-ink-3">{song.artist}</span>
+              <ArrowUpRight className="h-4 w-4 self-center text-ink-3 transition-colors group-hover:text-ink" aria-hidden />
+            </a>
+          </li>
         ))}
-      </div>
+      </ul>
     </Group>
 
-    <Group label="Also on my mind">
-      <div className="flex flex-wrap gap-2">
+    <Group title="Also on my mind">
+      <ul className="flex flex-wrap gap-2">
         {current.focusAreas.map((area) => (
-          <GlassChip key={area} mono={false} className="text-[0.9375rem] text-ink-2">
+          <li key={area} className="tag !px-3.5 !py-1.5 !text-[0.9375rem]">
             {area}
-          </GlassChip>
+          </li>
         ))}
-      </div>
+      </ul>
     </Group>
   </div>
 );

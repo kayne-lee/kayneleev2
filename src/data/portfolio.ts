@@ -1,20 +1,21 @@
 /**
- * All site content. Kept out of the components so the dashboard shell stays
+ * All site content. Kept out of the components so the page shell stays
  * about layout and motion, and copy edits never touch JSX.
  *
  * Images come from `@/assets/images`, which resizes and converts them to WebP
  * at build time. They are objects (srcset + fallback + intrinsic size), not
- * paths — hand them to <GlassWell image={...}>.
+ * paths — hand them to <Mark image={...}>.
  */
-import { IMAGES } from "@/assets/images";
+import { IMAGES, type Picture } from "@/assets/images";
 
 
 export const identity = {
   name: "Kayne Lee",
   headshot: IMAGES.headshot,
-  role: "Software Engineer Intern",
-  company: "Microsoft",
-  study: "Computer Engineering, Queen's University",
+  /** The hero's main line. */
+  headline: "Computer Engineering @ Queen's University (Grad: June 2027)",
+  /** The hero's second line. */
+  previously: "Prev SWE @ Microsoft & IBM",
   links: [
     { label: "kayne.lee2@outlook.com", short: "Email", href: "mailto:kayne.lee2@outlook.com" },
     { label: "linkedin.com/in/kaynelee", short: "LinkedIn", href: "https://www.linkedin.com/in/kaynelee" },
@@ -34,7 +35,7 @@ export type Job = {
   description?: string;
   /** Resume form — one achievement per line. */
   bullets?: string[];
-  image: string;
+  image: Picture;
   current?: boolean;
 };
 
@@ -43,7 +44,7 @@ export const experience: Job[] = [
     id: 1,
     title: "Software Engineer Intern",
     company: "Microsoft",
-    period: "May 2026 — Present",
+    period: "May 2026 — August 2026",
     shortPeriod: "2026",
     location: "Redmond, Washington",
     bullets: [
@@ -54,7 +55,6 @@ export const experience: Job[] = [
       "Cut false positives 17% with stacked LightGBM ensembles; sampling cut explainer compute 62%.",
     ],
     image: IMAGES.ms,
-    current: true,
   },
   {
     id: 2,
@@ -99,10 +99,10 @@ export const experience: Job[] = [
 ];
 
 export const education = {
-  degree: "B.S. Computer Engineering",
+  degree: "BASc Computer Engineering",
   school: "Queen's University",
   start: "September 2022",
-  end: "December 2027",
+  end: "June 2027",
   startYear: 2022,
   endYear: 2027,
   coursework: [
@@ -129,7 +129,7 @@ export type Project = {
   description: string;
   tech: string[];
   link: string;
-  image: string;
+  image: Picture;
 };
 
 export const projects: Project[] = [
@@ -170,12 +170,12 @@ export const projects: Project[] = [
     description:
       "Built a Numerai trading pipeline that ranked Top 20 in North America over 3 months, generating roughly 60% returns. Used Numerai's API to parse and organize the data, then trained a LightGBM model with era-based validation to improve robustness and reduce overfitting under shifting market regimes.",
     tech: ["Python", "LightGBM", "scikit-learn", "NumerAI"],
-    link: "github.com/kayne-lee/NumerAI-Model",
+    link: "github.com/kayne-lee/numerAIModel",
     image: IMAGES.nm,
   },
 ];
 
-export type Hobby = { id: number; title: string; description: string; image: string };
+export type Hobby = { id: number; title: string; description: string; image: Picture };
 
 export const hobbies: Hobby[] = [
   { id: 1, title: "Football", description: "Varsity High School Football Team", image: IMAGES.Football },
@@ -215,6 +215,9 @@ export const hobbies: Hobby[] = [
   },
 ];
 
+/** Interests without a photo — listed under the photo grid. */
+export const alsoInto = ["Running", "Piano", "Gundam builds", "Markets"];
+
 export type Activity = {
   id: number;
   title: string;
@@ -223,7 +226,7 @@ export type Activity = {
   /** Fits the tile, where the full range truncates. */
   shortPeriod: string;
   description: string;
-  image: string;
+  image: Picture;
   current?: boolean;
 };
 

@@ -1,8 +1,6 @@
-import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { GlassPane } from "@/components/glass/GlassPane";
-import { GlassChip } from "@/components/glass/GlassChip";
 
 const NotFound = () => {
   const location = useLocation();
@@ -12,24 +10,21 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-dvh items-center justify-center p-6">
-      <GlassPane settleIndex={0} className="w-full max-w-md p-8 text-center">
-        <p className="eyebrow">Error 404</p>
-        <h1 className="mt-2 font-display text-3xl font-bold tracking-[-0.03em] text-ink">
-          Nothing at this address
-        </h1>
-        <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-2">
-          <span className="font-mono text-sm text-ink-3">{location.pathname}</span> doesn't exist.
-          The dashboard is back home.
-        </p>
-        <div className="mt-6 flex justify-center">
-          <GlassChip href="/">
-            <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
-            Back to the dashboard
-          </GlassChip>
-        </div>
-      </GlassPane>
-    </div>
+    <main className="flex min-h-dvh flex-col justify-end px-5 pb-10 sm:px-9 sm:pb-14">
+      <h1 className="font-display text-[clamp(3rem,12vw,10rem)] font-black leading-[0.85] tracking-[-0.015em] [font-stretch:62%] pb-[0.15em] text-mist">
+        Nothing at this address
+      </h1>
+      <p className="mt-6 max-w-[52ch] text-lg leading-relaxed text-mist">
+        <span className="break-all font-semibold">{location.pathname}</span> doesn't exist. Everything on this site
+        lives on the home page.
+      </p>
+      <div className="mt-7">
+        <a href="/" className="pill pill-light">
+          <ArrowLeft className="h-4 w-4" aria-hidden />
+          Back to the home page
+        </a>
+      </div>
+    </main>
   );
 };
 

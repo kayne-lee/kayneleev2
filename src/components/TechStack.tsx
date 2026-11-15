@@ -1,7 +1,5 @@
-import { Boxes, Database } from "lucide-react";
+import { Atom, Cog, Database, Link, RefreshCw, Wind, Workflow, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { GlassPane } from "@/components/glass/GlassPane";
-import { cn } from "@/lib/utils";
 import { iconUrl } from "@/assets/icons";
 
 type Skill = {
@@ -14,95 +12,101 @@ type Skill = {
 
 type Category = {
   title: string;
-  /** Tailwind grid-span classes for the bento layout. */
-  span?: string;
   skills: Skill[];
 };
 
+/* Groups and order mirror the stack on the GitHub profile README. */
 const categories: Category[] = [
   {
     title: "Languages",
-    span: "sm:col-span-2",
     skills: [
       { name: "Python", icon: "logos:python" },
-      { name: "C", icon: "logos:c" },
+      { name: "TypeScript", icon: "logos:typescript-icon" },
+      { name: "JavaScript", icon: "logos:javascript" },
+      { name: "Rust", fallback: Cog },
       { name: "C++", icon: "logos:c-plusplus" },
       { name: "C#", icon: "logos:c-sharp" },
       { name: "Java", icon: "logos:java" },
-      { name: "JavaScript", icon: "logos:javascript" },
-      { name: "TypeScript", icon: "logos:typescript-icon" },
-      { name: "Ruby", icon: "logos:ruby" },
       { name: "SQL", fallback: Database },
     ],
   },
   {
-    title: "AI & ML",
-    /* Spans both rows so the Frameworks row does not leave a hole. */
-    span: "sm:row-span-2",
-    skills: [
-      { name: "PyTorch", icon: "logos:pytorch-icon" },
-      { name: "LangChain", fallback: Boxes },
-      { name: "LangGraph", fallback: Boxes },
-    ],
-  },
-  {
-    title: "Frameworks",
-    span: "sm:col-span-2",
+    title: "Frontend",
     skills: [
       { name: "React", icon: "logos:react" },
       { name: "Next.js", icon: "logos:nextjs-icon" },
-      { name: "Node.js", icon: "logos:nodejs-icon" },
-      { name: "Django", icon: "logos:django-icon" },
-      { name: "FastAPI", icon: "logos:fastapi-icon" },
-      { name: "Spring Boot", icon: "logos:spring-icon" },
-      { name: ".NET", icon: "logos:dotnet" },
+      { name: "Tailwind CSS", fallback: Wind },
+      { name: "Redux", fallback: Atom },
+      { name: "Vite", fallback: Zap },
     ],
   },
   {
-    title: "Cloud & tools",
-    span: "sm:col-span-3",
+    title: "Backend",
+    skills: [
+      { name: "FastAPI", icon: "logos:fastapi-icon" },
+      { name: "Django", icon: "logos:django-icon" },
+      { name: "Node.js", icon: "logos:nodejs-icon" },
+    ],
+  },
+  {
+    title: "Databases",
+    skills: [
+      { name: "PostgreSQL", icon: "logos:postgresql" },
+      { name: "MongoDB", icon: "logos:mongodb-icon" },
+      { name: "Supabase", fallback: Database },
+    ],
+  },
+  {
+    title: "Agents",
+    skills: [
+      { name: "LangGraph", fallback: Workflow },
+      { name: "LangChain", fallback: Link },
+      { name: "PyTorch", icon: "logos:pytorch-icon" },
+    ],
+  },
+  {
+    title: "Infra",
     skills: [
       { name: "AWS", icon: "logos:aws" },
       { name: "Azure", icon: "logos:azure-icon" },
       { name: "Docker", icon: "logos:docker-icon" },
       { name: "Kubernetes", icon: "logos:kubernetes" },
-      { name: "Git", icon: "logos:git-icon" },
-      { name: "PostgreSQL", icon: "logos:postgresql" },
-      { name: "MongoDB", icon: "logos:mongodb-icon" },
-      { name: "Elasticsearch", icon: "logos:elasticsearch" },
-      { name: "CI/CD", fallback: Boxes },
+      { name: "CI/CD", fallback: RefreshCw },
     ],
   },
 ];
 
-/** Logo in its own recessed slot, so every mark sits at the same depth. */
 const TechChip = ({ skill }: { skill: Skill }) => {
   const Fallback = skill.fallback;
   return (
-    <span className="glass-chip gap-2 py-1.5 pl-1.5 pr-3 text-sm">
-      <span className="glass-well flex h-6 w-6 items-center justify-center rounded-lg">
+    <li className="tag tag-solid !gap-2 !py-1.5 !pl-2 !pr-3.5 !text-[0.9375rem] text-ink">
+      <span className="flex h-5 w-5 items-center justify-center">
         {skill.icon ? (
-          <img src={iconUrl(skill.icon)} alt="" width={14} height={14} loading="lazy" decoding="async" className="h-3.5 w-3.5" />
+          <img src={iconUrl(skill.icon)} alt="" width={18} height={18} loading="lazy" decoding="async" className="h-[1.125rem] w-[1.125rem] object-contain" />
         ) : Fallback ? (
-          <Fallback className="h-3.5 w-3.5 text-ink-3" />
+          <Fallback className="h-4 w-4 text-ink-3" />
         ) : null}
       </span>
       {skill.name}
-    </span>
+    </li>
   );
 };
 
+/** Six groups as rows: the group name on the left, its tools on the right. */
 const TechStack = () => (
-  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+  <div>
     {categories.map((category) => (
-      <GlassPane key={category.title} depth={3} className={cn("p-5", category.span)}>
-        <p className="eyebrow">{category.title}</p>
-        <div className="mt-3 flex flex-wrap gap-2">
+      <div
+        key={category.title}
+        className="grid gap-3 border-t border-ink/10 py-6 first:border-t-0 first:pt-0 last:pb-0 sm:grid-cols-[9.5rem_1fr] sm:gap-6"
+      >
+        <h3 className="font-display text-xl font-semibold tracking-[-0.02em] text-ink sm:pt-1">{category.title}</h3>
+        <ul className="flex flex-wrap gap-2">
           {category.skills.map((skill) => (
             <TechChip key={skill.name} skill={skill} />
           ))}
-        </div>
-      </GlassPane>
+        </ul>
+      </div>
     ))}
   </div>
 );

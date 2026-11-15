@@ -13,9 +13,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Inter", "system-ui", "sans-serif"],
-        sans: ["Inter", "system-ui", "sans-serif"],
-        mono: ['"IBM Plex Mono"', "ui-monospace", "monospace"],
+        display: ["Archivo", "system-ui", "sans-serif"],
+        sans: ['"Instrument Sans"', "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -57,13 +56,22 @@ export default {
           2: "hsl(var(--ink-2))",
           3: "hsl(var(--ink-3))",
         },
+        chalk: "hsl(var(--chalk))",
+        mist: "hsl(var(--mist))",
+        /* The gradient's pigments. */
+        periwinkle: "hsl(var(--periwinkle))",
+        coral: "hsl(var(--coral))",
+        iris: "hsl(var(--iris))",
+        orchid: "hsl(var(--orchid))",
+        peach: "hsl(var(--peach))",
+        sky: "hsl(var(--sky))",
+        violet: "hsl(var(--violet))",
+        cobalt: "hsl(var(--cobalt))",
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
-        pane: "26px",
-        well: "14px",
       },
       keyframes: {
         "accordion-down": {
@@ -74,22 +82,10 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        /* Glass settling into place on load. */
-        settle: {
-          from: { opacity: "0", transform: "translateY(10px) scale(0.985)" },
-          to: { opacity: "1", transform: "translateY(0) scale(1)" },
-        },
-        /* The single live indicator, on the Now tile and the current role. */
-        breathe: {
-          "0%, 100%": { opacity: "1", transform: "scale(1)" },
-          "50%": { opacity: "0.45", transform: "scale(0.82)" },
-        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        settle: "settle 0.66s cubic-bezier(0.16, 1, 0.3, 1) both",
-        breathe: "breathe 2.4s ease-in-out infinite",
       },
     },
   },
