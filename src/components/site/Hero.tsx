@@ -34,17 +34,17 @@ export const Hero = () => (
       <img
         src={identity.headshot.img.src}
         srcSet={identity.headshot.sources.webp}
-        sizes="(min-width: 640px) 144px, 112px"
+        sizes="(min-width: 640px) 144px, (min-width: 380px) 112px, 80px"
         width={identity.headshot.img.w}
         height={identity.headshot.img.h}
         alt={`Portrait of ${identity.name}`}
         fetchPriority="high"
         decoding="async"
-        className="h-28 w-28 shrink-0 rounded-full object-cover object-[50%_28%] ring-4 ring-mist sm:h-36 sm:w-36"
+        className="h-20 w-20 shrink-0 rounded-full min-[380px]:h-28 min-[380px]:w-28 object-cover object-[50%_28%] ring-4 ring-mist sm:h-36 sm:w-36"
       />
-      <p className="max-w-[30ch] font-display text-[1.25rem] font-semibold leading-[1.15] tracking-[-0.01em] text-mist sm:text-[1.75rem] lg:text-[2rem]">
+      <p className="max-w-[30ch] font-display text-[1.0625rem] font-semibold leading-[1.15] min-[380px]:text-[1.25rem] tracking-[-0.01em] text-mist sm:text-[1.75rem] lg:text-[2rem]">
         {identity.headline}
-        <span className="mt-2 block font-sans text-base font-medium leading-snug tracking-normal text-mist sm:text-xl">
+        <span className="mt-2 block font-sans text-base font-medium leading-snug tracking-normal text-mist sm:text-xl max-[379px]:text-sm">
           {identity.previously}
         </span>
       </p>

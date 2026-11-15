@@ -13,8 +13,9 @@
 
    Layers, bottom to top:
      1. .field        — fixed; dawn blobs + noon/dusk washes + grain (GrainField.tsx)
-     2. .sheet        — opaque chalk paper with a faint tooth
-     3. .swatch/.orb  — small grainy gradient pieces inside the sheets
+     2. .sheet        — opaque, flat chalk paper
+     3. .orb          — the small grainy gradient markers inside the sheets
+        (.swatch is the same gradient without grain, for panels with content)
 
    shadcn tokens must stay HSL triples.
    ========================================================================= */
@@ -61,10 +62,6 @@
        lighter and darker — that two-way speckle is what reads as grain rather
        than as dirt. Rasterised once as a tile; nothing here animates. */
     --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='3.4 0 0 0 -1.2 3.4 0 0 0 -1.2 3.4 0 0 0 -1.2 0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23g)'/%3E%3C/svg%3E");
-
-    /* Paper tooth for the sheets: sparse navy flecks, painted normally (no
-       blend mode), so it costs nothing while scrolling. */
-    --tooth: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='t'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .07 0 0 0 0 .1 0 0 0 0 .21 0.6 0 0 0 -.27'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23t)'/%3E%3C/svg%3E");
 
     /* --- shadcn compatibility ------------------------------------------- */
     --background: var(--chalk);
@@ -286,9 +283,8 @@
   .sheet {
     position: relative;
     border-radius: 1.75rem;
+    /* Flat on purpose: no grain on anything that holds content. */
     background-color: hsl(var(--chalk));
-    background-image: var(--tooth);
-    background-size: 256px 256px;
   }
 
   @media (min-width: 1024px) {
@@ -323,7 +319,8 @@
     background: radial-gradient(circle at 30% 26%, var(--a) 0%, var(--b) 58%, var(--c, var(--b)) 100%);
   }
 
-  .swatch::after,
+  /* Grain is for the orbs only. Swatches carry text and screenshots, and
+     speckle over those makes them hard to read. */
   .orb::after {
     content: "";
     position: absolute;

@@ -1,66 +1,157 @@
+import {
+  Award,
+  Binary,
+  BookOpen,
+  Boxes,
+  Code,
+  Cpu,
+  Database,
+  Medal,
+  Network,
+  SquareTerminal,
+  Trophy,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { education } from "@/data/portfolio";
 
-/** Fraction of the degree completed today. A real, live number. */
-const degreeProgress = () => {
-  const start = new Date(education.startYear, 8).getTime(); // September
-  const end = new Date(education.endYear, 5).getTime(); // June
-  return Math.min(100, Math.max(0, ((Date.now() - start) / (end - start)) * 100));
+const START = new Date(education.startYear, 8).getTime(); // September
+const END = new Date(education.endYear, 5).getTime(); // June
+
+/** Where a date falls along the degree, 0–100. */
+const along = (time: number) => Math.min(100, Math.max(0, ((time - START) / (END - START)) * 100));
+
+/** One mark per academic year (each September), then graduation. */
+const YEAR_MARKS = [
+  ...Array.from({ length: education.endYear - education.startYear }, (_, i) => ({
+    label: i === 0 ? `Sep ${education.startYear}` : String(education.startYear + i),
+    at: along(new Date(education.startYear + i, 8).getTime()),
+  })),
+  { label: `Jun ${education.endYear}`, at: 100 },
+];
+
+/** A glyph per course. Anything not listed falls back to a book. */
+const COURSE_ICONS: Record<string, LucideIcon> = {
+  "Data Structures & Algorithms": Binary,
+  "Computer Architecture": Cpu,
+  "Operating Systems": SquareTerminal,
+  "Object-Oriented Programming": Boxes,
+  "Software Development": Code,
+  "Database Systems": Database,
+  "Computer Networks": Network,
 };
 
+/** Cycled through the honors, in order. */
+const HONOR_ICONS: LucideIcon[] = [Award, Medal, Trophy];
+
+/**
+ * Fills the sheet top to bottom: the degree set plainly in type over a
+ * year-by-year timeline, then coursework tiles beside the honors, both
+ * stretching to use whatever height is left.
+ */
 export const EducationSection = () => {
-  const progress = Math.round(degreeProgress());
+  const now = along(Date.now());
+  const progress = Math.round(now);
 
   return (
-    <div>
-      <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-0.5">
-        <h3 className="font-display text-2xl font-semibold leading-tight tracking-[-0.025em] text-ink sm:text-[1.75rem]">
+    <div className="flex flex-1 flex-col gap-7 lg:gap-9">
+      <div>
+        <p className="text-base font-medium text-ink-3 sm:text-lg">{education.school}</p>
+        <h3 className="mt-1 font-display text-[2.25rem] font-black leading-[0.95] tracking-[-0.01em] text-ink [font-stretch:75%] sm:text-[3.5rem]">
           {education.degree}
         </h3>
-        <span className="text-sm tabular-nums text-ink-3">
-          {education.start} — {education.end}
-        </span>
-      </div>
-      <p className="mt-1 text-[0.9375rem] font-medium text-ink">{education.school}</p>
 
-      <div className="mt-5 max-w-md">
+        {/* The degree as a line: a tick for each academic year, filled up to today. */}
         <div
-          className="meter"
-          role="progressbar"
-          aria-label="Degree progress"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={progress}
+          className="relative mt-12 sm:mt-14"
+          role="img"
+          aria-label={`${education.start} to ${education.end}, ${progress}% complete`}
         >
-          <span style={{ width: `${progress}%` }} />
-        </div>
-        <div className="mt-1.5 flex justify-between text-[0.8125rem] tabular-nums text-ink-3">
-          <span>{education.startYear}</span>
-          <span>{progress}% complete</span>
-          <span>{education.endYear}</span>
+          <span
+            className="absolute bottom-full mb-2.5 -translate-x-1/2 whitespace-nowrap text-sm font-semibold text-ink"
+            style={{ left: `${now}%` }}
+          >
+            Now, {progress}%
+          </span>
+
+          <div className="relative h-[3px] bg-ink/15">
+            <span className="absolute inset-y-0 left-0 bg-ink" style={{ width: `${now}%` }} />
+            {YEAR_MARKS.map((mark) => (
+              <span
+                key={mark.label}
+                className="absolute top-1/2 h-3 w-[3px] -translate-x-1/2 -translate-y-1/2 bg-ink"
+                style={{ left: `${mark.at}%`, opacity: mark.at <= now ? 1 : 0.25 }}
+              />
+            ))}
+            <span
+              className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet ring-4 ring-chalk"
+              style={{ left: `${now}%` }}
+            />
+          </div>
+
+          <div className="relative mt-3 h-5 text-sm tabular-nums text-ink-3">
+            {YEAR_MARKS.map((mark, index) => {
+              const first = index === 0;
+              const last = index === YEAR_MARKS.length - 1;
+              return (
+                <span
+                  key={mark.label}
+                  className={
+                    first
+                      ? "absolute left-0"
+                      : last
+                        ? "absolute right-0"
+                        : "absolute hidden -translate-x-1/2 sm:block"
+                  }
+                  style={first || last ? undefined : { left: `${mark.at}%` }}
+                >
+                  {mark.label}
+                </span>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      <div className="mt-10 grid gap-10 border-t border-ink/10 pt-8 sm:grid-cols-2">
-        <div>
-          <h4 className="font-display text-lg font-semibold tracking-[-0.02em] text-ink">Coursework</h4>
-          <ul className="mt-3 space-y-1.5 text-[0.9688rem] text-ink-2">
-            {education.coursework.map((course) => (
-              <li key={course}>{course}</li>
-            ))}
+      <div className="grid flex-1 gap-4 lg:grid-cols-5 lg:gap-5">
+        <section className="flex flex-col rounded-[1.75rem] bg-white p-5 shadow-[0_0_0_1px_hsl(var(--ink-1)/0.07)] sm:p-6 lg:col-span-3">
+          <h3 className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-[-0.01em] text-ink">
+            <BookOpen className="h-5 w-5 text-violet" aria-hidden />
+            Coursework
+          </h3>
+          <ul className="mt-4 grid flex-1 auto-rows-fr gap-2 sm:grid-cols-2">
+            {education.coursework.map((course) => {
+              const Icon = COURSE_ICONS[course] ?? BookOpen;
+              return (
+                <li key={course} className="flex items-center gap-3 rounded-2xl bg-chalk px-3 py-2.5">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-periwinkle/60 text-ink">
+                    <Icon className="h-5 w-5" aria-hidden />
+                  </span>
+                  <span className="text-[0.9375rem] font-medium leading-snug text-ink">{course}</span>
+                </li>
+              );
+            })}
           </ul>
-        </div>
+        </section>
 
-        <div>
-          <h4 className="font-display text-lg font-semibold tracking-[-0.02em] text-ink">Honors & awards</h4>
-          <ul className="mt-3 space-y-2.5 text-[0.9688rem] leading-snug text-ink-2">
-            {education.honors.map((honor) => (
-              <li key={honor} className="flex gap-3">
-                <span className="mt-[0.5em] h-1.5 w-1.5 shrink-0 rounded-full bg-coral" aria-hidden />
-                {honor}
-              </li>
-            ))}
+        <section className="flex flex-col rounded-[1.75rem] bg-white p-5 shadow-[0_0_0_1px_hsl(var(--ink-1)/0.07)] sm:p-6 lg:col-span-2">
+          <h3 className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-[-0.01em] text-ink">
+            <Trophy className="h-5 w-5 text-coral" aria-hidden />
+            Honors & awards
+          </h3>
+          <ul className="mt-4 grid flex-1 auto-rows-fr gap-2">
+            {education.honors.map((honor, index) => {
+              const Icon = HONOR_ICONS[index % HONOR_ICONS.length];
+              return (
+                <li key={honor} className="flex items-center gap-3 rounded-2xl bg-chalk px-3 py-2.5">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-peach text-ink">
+                    <Icon className="h-5 w-5" aria-hidden />
+                  </span>
+                  <span className="text-[0.9375rem] font-medium leading-snug text-ink">{honor}</span>
+                </li>
+              );
+            })}
           </ul>
-        </div>
+        </section>
       </div>
     </div>
   );

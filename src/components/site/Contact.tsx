@@ -7,7 +7,8 @@ import { VIEWS } from "./sections";
  * The last page. Like the hero it sits straight on the field — by here turned
  * all the way to dusk, so the type is set in mist.
  */
-export const Contact = () => (
+/** `paged`: shown as its own screen (desktop), so it offers a way back. */
+export const Contact = ({ paged }: { paged: boolean }) => (
   <section
     aria-labelledby="contact-title"
     className="rise flex flex-1 flex-col justify-end px-2 pb-6 pt-10 text-mist sm:px-4 sm:pb-8 lg:pb-10"
@@ -41,7 +42,12 @@ export const Contact = () => (
         ))}
       </ul>
 
-      <Pager index={VIEWS.length - 1} className="[&_a]:!text-mist [&_a]:shadow-[inset_0_0_0_1px_hsl(var(--mist)/0.5)] hover:[&_a]:!bg-mist/15" />
+      {paged && (
+        <Pager
+          index={VIEWS.length - 1}
+          className="[&_a]:!text-mist [&_a]:shadow-[inset_0_0_0_1px_hsl(var(--mist)/0.5)] hover:[&_a]:!bg-mist/15"
+        />
+      )}
     </div>
   </section>
 );
