@@ -13,8 +13,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Archivo", "system-ui", "sans-serif"],
-        sans: ['"Instrument Sans"', "system-ui", "sans-serif"],
+        /* SF on Apple devices; Inter elsewhere. */
+        display: ["-apple-system", "BlinkMacSystemFont", '"SF Pro Display"', "Inter", '"Helvetica Neue"', "Arial", "sans-serif"],
+        sans: ["-apple-system", "BlinkMacSystemFont", '"SF Pro Text"', "Inter", '"Helvetica Neue"', "Arial", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -50,23 +51,15 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        /* Ink scale — the only text colors on the site. */
+        /* Ink scale: the only text colours on the site. */
         ink: {
           DEFAULT: "hsl(var(--ink-1))",
           2: "hsl(var(--ink-2))",
           3: "hsl(var(--ink-3))",
         },
-        chalk: "hsl(var(--chalk))",
-        mist: "hsl(var(--mist))",
-        /* The gradient's pigments. */
-        periwinkle: "hsl(var(--periwinkle))",
-        coral: "hsl(var(--coral))",
-        iris: "hsl(var(--iris))",
-        orchid: "hsl(var(--orchid))",
-        peach: "hsl(var(--peach))",
-        sky: "hsl(var(--sky))",
-        violet: "hsl(var(--violet))",
-        cobalt: "hsl(var(--cobalt))",
+        paper: "hsl(var(--paper))",
+        surface: "hsl(var(--surface))",
+        line: "hsl(var(--line))",
       },
       borderRadius: {
         lg: "var(--radius)",

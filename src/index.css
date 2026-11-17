@@ -3,89 +3,63 @@
 @tailwind utilities;
 
 /* ============================================================================
-   GRAIN — light only.
+   MINIMAL — black and white, follows the system light/dark setting.
 
-   One fixed gradient field sits behind the whole site and runs from dawn
-   (periwinkle, coral) through rose to dusk (obsidian, violet, cobalt) as
-   you move from the hero page, through the sections, to contact. Film grain is laid over it. Content rides on
-   opaque chalk sheets, so body text never has to fight the gradient; only the
-   hero and the footer sit directly on the field.
+   One centred column, a lot of air, system type. No texture, no gradients,
+   no shadows doing the work: hierarchy comes from size, weight and grey.
 
-   Layers, bottom to top:
-     1. .field        — fixed; dawn blobs + noon/dusk washes + grain (GrainField.tsx)
-     2. .sheet        — opaque, flat chalk paper
-     3. .orb          — the small grainy gradient markers inside the sheets
-        (.swatch is the same gradient without grain, for panels with content)
-
-   shadcn tokens must stay HSL triples.
+   Every colour is a token below and is redefined for dark mode. shadcn
+   tokens must stay HSL triples.
    ========================================================================= */
 
 @layer base {
   :root {
-    /* --- ink: obsidian navy, never pure black --------------------------- */
-    --ink-1: 228 47% 14%; /* headings          — 15.5:1 on chalk */
-    --ink-2: 228 24% 28%; /* body              —  9.9:1 on chalk */
-    --ink-3: 228 14% 40%; /* dates, captions   —  5.6:1 on chalk */
+    color-scheme: light;
 
-    /* --- paper ---------------------------------------------------------- */
-    --chalk: 285 16% 96%;
+    --ink-1: 240 3% 12%; /* #1D1D1F — headings */
+    --ink-2: 240 2% 26%; /* body copy */
+    --ink-3: 240 2% 44%; /* #6E6E73 — secondary */
+    --paper: 0 0% 100%;
+    --surface: 240 9% 96.5%; /* #F5F5F7 — panels */
+    --line: 240 4% 84%; /* #D2D2D7 */
+    --nav: 0 0% 100% / 0.72;
 
-    /* --- the gradient's pigments: blue and purple, with a warm pop ------- */
-    --periwinkle: 228 100% 82%; /* the dawn ground */
-    --sky: 200 95% 72%;
-    --iris: 256 92% 74%;
-    --orchid: 308 88% 76%;
-    --violet: 262 84% 58%;
-    --cobalt: 224 86% 55%;
-    /* The warm counterweight. Peach glows in the field; coral is the small
-       accent on paper (bullets, underlines, the "current" dot). */
-    --peach: 22 100% 82%;
-    --coral: 12 100% 66%;
-
-    /* --- the field itself: the same hues, taken deep ---------------------
-       The field is dark from the first page on, so everything that sits
-       straight on it (hero, contact, 404) is set in --mist. Every colour here
-       has to hold mist text at 4.5:1 or better — do not lighten them
-       without re-checking. The brighter pigments above are for the small
-       pieces on paper (orbs, swatches, meters). */
-    --field-ground: 236 58% 17%;
-    --field-indigo: 252 70% 42%;
-    --field-cobalt: 222 84% 42%;
-    --field-orchid: 296 62% 40%;
-    --field-ember: 352 62% 44%;
-    /* Type and buttons that sit straight on the field. A periwinkle tint, not
-       white: it belongs to the gradient instead of glaring off it. 5:1 against
-       the brightest field colour (cobalt), 11:1 against the ground. */
-    --mist: 232 100% 87%;
-
-    /* Film grain. Grey noise centred on 50% so `overlay` pushes pixels both
-       lighter and darker — that two-way speckle is what reads as grain rather
-       than as dirt. Rasterised once as a tile; nothing here animates. */
-    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='3.4 0 0 0 -1.2 3.4 0 0 0 -1.2 3.4 0 0 0 -1.2 0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23g)'/%3E%3C/svg%3E");
-
-    /* --- shadcn compatibility ------------------------------------------- */
-    --background: var(--chalk);
+    --background: var(--paper);
     --foreground: var(--ink-1);
-    --card: 0 0% 100%;
+    --card: var(--paper);
     --card-foreground: var(--ink-1);
-    --popover: 0 0% 100%;
+    --popover: var(--paper);
     --popover-foreground: var(--ink-1);
     --primary: var(--ink-1);
-    --primary-foreground: var(--chalk);
-    --secondary: 285 12% 91%;
+    --primary-foreground: var(--paper);
+    --secondary: var(--surface);
     --secondary-foreground: var(--ink-1);
-    --muted: 285 12% 92%;
+    --muted: var(--surface);
     --muted-foreground: var(--ink-3);
-    --accent: var(--coral);
+    --accent: var(--surface);
     --accent-foreground: var(--ink-1);
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 228 20% 86%;
-    --input: 228 20% 86%;
+    --border: var(--line);
+    --input: var(--line);
     --ring: var(--ink-1);
     --radius: 0.75rem;
 
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+
+      --ink-1: 240 9% 96.5%; /* #F5F5F7 */
+      --ink-2: 240 2% 80%;
+      --ink-3: 240 2% 54%; /* #86868B */
+      --paper: 0 0% 0%;
+      --surface: 240 3% 9%; /* #161617 */
+      --line: 240 2% 26%; /* #424245 */
+      --nav: 0 0% 0% / 0.72;
+    }
   }
 }
 
@@ -95,30 +69,43 @@
   }
 
   html {
-    /* What shows before the field paints, and in overscroll. */
-    background-color: hsl(var(--field-ground));
+    background-color: hsl(var(--paper));
   }
 
+  /* One text size for the whole site. Hierarchy is bold; secondary detail
+     is italic. Nothing else changes size. */
   body {
     @apply font-sans antialiased;
-    background: transparent;
+    background: hsl(var(--paper));
     color: hsl(var(--ink-2));
     overflow-x: clip;
+    font-size: 0.9375rem;
+    line-height: 1.65;
   }
 
   h1,
   h2,
   h3,
   h4 {
-    @apply font-display;
+    font-size: inherit;
+    font-weight: 700;
     color: hsl(var(--ink-1));
-    font-stretch: 88%;
-    letter-spacing: -0.02em;
+  }
+
+  em,
+  .em {
+    font-style: italic;
+    color: hsl(var(--ink-3));
+  }
+
+  strong {
+    font-weight: 700;
+    color: hsl(var(--ink-1));
   }
 
   ::selection {
-    background: hsl(var(--coral) / 0.28);
-    color: hsl(var(--ink-1));
+    background: hsl(var(--ink-1));
+    color: hsl(var(--paper));
   }
 
   :focus-visible {
@@ -129,212 +116,51 @@
 }
 
 @layer components {
-  /* ==========================================================================
-     THE FIELD
-     ======================================================================== */
-
-  .field {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-    background: hsl(var(--field-ground));
-    isolation: isolate;
-    pointer-events: none;
+  /* Buttons. Solid ink for the main action, a plain outline otherwise. */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    padding: 0.45rem 1rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: hsl(var(--paper));
+    background: hsl(var(--ink-1));
+    transition:
+      opacity 0.2s ease,
+      box-shadow 0.2s ease;
   }
 
-  .field-dawn,
-  .field-noon,
-  .field-dusk,
-  .field-grain {
-    position: absolute;
-    inset: 0;
+  .btn:hover {
+    opacity: 0.82;
   }
 
-  /* Dawn is built from four soft discs so they can drift on the compositor
-     (transform only) instead of repainting a viewport-sized gradient. */
-  .blob {
-    position: absolute;
-    border-radius: 50%;
-    will-change: transform;
-    animation: bloom 1.6s var(--ease-out) both;
+  .btn-ghost {
+    color: hsl(var(--ink-1));
+    background: transparent;
+    box-shadow: inset 0 0 0 1px hsl(var(--line));
   }
 
-  .blob-iris {
-    left: -28vmax;
-    bottom: -34vmax;
-    width: 92vmax;
-    height: 92vmax;
-    background: radial-gradient(closest-side, hsl(var(--field-indigo)) 0%, hsl(var(--field-indigo) / 0.85) 38%, transparent 100%);
-    animation:
-      bloom 1.6s var(--ease-out) both,
-      drift-a 46s ease-in-out 1.6s infinite;
+  .btn-ghost:hover {
+    opacity: 1;
+    box-shadow: inset 0 0 0 1px hsl(var(--ink-1));
   }
 
-  .blob-orchid {
-    right: -22vmax;
-    top: 8vmax;
-    width: 78vmax;
-    height: 78vmax;
-    background: radial-gradient(closest-side, hsl(var(--field-orchid)) 0%, hsl(var(--field-orchid) / 0.8) 34%, transparent 100%);
-    animation:
-      bloom 1.9s var(--ease-out) 0.1s both,
-      drift-b 58s ease-in-out 2s infinite;
+  /* Apple's "Learn more ›" link. */
+  .text-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    color: hsl(var(--ink-1));
+    font-weight: 700;
   }
 
-  .blob-sky {
-    right: -12vmax;
-    top: -30vmax;
-    width: 64vmax;
-    height: 64vmax;
-    background: radial-gradient(closest-side, hsl(var(--field-cobalt)) 0%, hsl(var(--field-cobalt) / 0.75) 40%, transparent 100%);
-    animation:
-      bloom 2.1s var(--ease-out) 0.2s both,
-      drift-a 64s ease-in-out 2.3s infinite reverse;
+  .text-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
   }
-
-  /* The one warm note, top-left: what keeps the blues from going cold. */
-  .blob-glow {
-    left: 2vmax;
-    top: -22vmax;
-    width: 58vmax;
-    height: 58vmax;
-    background: radial-gradient(closest-side, hsl(var(--field-ember) / 0.9) 0%, hsl(var(--field-ember) / 0.55) 36%, transparent 100%);
-    animation: bloom 2.2s var(--ease-out) 0.25s both;
-  }
-
-  /* Two static washes faded in by which page you are on — opacity only, so
-     the crossfade never leaves the compositor. Dawn (pale periwinkle) deepens
-     to violet, then to navy. --noon and --dusk are written by GrainField. */
-  .field-noon {
-    opacity: var(--noon, 0);
-    transition: opacity 1.1s ease;
-    background:
-      radial-gradient(65% 60% at 4% 10%, hsl(var(--field-cobalt)) 0%, transparent 64%),
-      radial-gradient(60% 60% at 98% 90%, hsl(var(--field-orchid)) 0%, transparent 66%),
-      radial-gradient(50% 45% at 80% 12%, hsl(var(--field-ground)) 0%, transparent 70%),
-      hsl(262 72% 36%);
-  }
-
-  .field-dusk {
-    opacity: var(--dusk, 0);
-    transition: opacity 1.1s ease;
-    background:
-      radial-gradient(70% 60% at 8% 96%, hsl(var(--field-orchid) / 0.7) 0%, transparent 62%),
-      radial-gradient(60% 55% at 96% 4%, hsl(var(--field-cobalt)) 0%, transparent 66%),
-      radial-gradient(55% 60% at 68% 78%, hsl(var(--field-indigo) / 0.8) 0%, transparent 70%),
-      hsl(234 56% 9%);
-  }
-
-  .field-grain {
-    background-image: var(--grain);
-    background-size: 256px 256px;
-    mix-blend-mode: overlay;
-    opacity: 0.42;
-  }
-
-  /* A backgrounded tab cannot show the drift, so stop paying for it. Set from
-     main.tsx on visibilitychange — CSS alone cannot see tab visibility. */
-  :root[data-page-hidden="true"] .blob {
-    animation-play-state: paused;
-  }
-
-  @keyframes bloom {
-    from {
-      opacity: 0;
-      scale: 0.72;
-    }
-    to {
-      opacity: 1;
-      scale: 1;
-    }
-  }
-
-  @keyframes drift-a {
-    0%,
-    100% {
-      translate: 0 0;
-    }
-    33% {
-      translate: 5vmax -4vmax;
-    }
-    66% {
-      translate: -3vmax 3vmax;
-    }
-  }
-
-  @keyframes drift-b {
-    0%,
-    100% {
-      translate: 0 0;
-    }
-    33% {
-      translate: -6vmax 3vmax;
-    }
-    66% {
-      translate: 2vmax -5vmax;
-    }
-  }
-
-  /* ==========================================================================
-     PAPER
-     ======================================================================== */
-
-  .sheet {
-    position: relative;
-    border-radius: 1.75rem;
-    /* Flat on purpose: no grain on anything that holds content. */
-    background-color: hsl(var(--chalk));
-  }
-
-  @media (min-width: 1024px) {
-    .sheet {
-      border-radius: 2.25rem;
-    }
-  }
-
-  /* ==========================================================================
-     GRAINY GRADIENT PIECES
-     Colours come from --a / --b / --c, set inline per use.
-     ======================================================================== */
-
-  .swatch,
-  .orb {
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
-  }
-
-  .swatch {
-    border-radius: 1.25rem;
-    background:
-      radial-gradient(90% 90% at 12% 8%, var(--a) 0%, transparent 60%),
-      radial-gradient(90% 100% at 96% 100%, var(--c, var(--a)) 0%, transparent 62%),
-      var(--b);
-  }
-
-  .orb {
-    flex: none;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 26%, var(--a) 0%, var(--b) 58%, var(--c, var(--b)) 100%);
-  }
-
-  /* Grain is for the orbs only. Swatches carry text and screenshots, and
-     speckle over those makes them hard to read. */
-  .orb::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: var(--grain);
-    background-size: 200px 200px;
-    mix-blend-mode: overlay;
-    opacity: 0.5;
-    pointer-events: none;
-  }
-
-  /* ==========================================================================
-     SMALL PARTS
-     ======================================================================== */
 
   /* Company marks and logos: source art is a mark on solid white. */
   .mark {
@@ -343,79 +169,27 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    border-radius: 0.875rem;
+    border-radius: 0.375rem;
     background: #fff;
-    box-shadow: 0 0 0 1px hsl(var(--ink-1) / 0.08);
+    box-shadow: 0 0 0 1px hsl(var(--line));
   }
 
-  .tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    border-radius: 999px;
-    padding: 0.25rem 0.7rem;
-    font-size: 0.8125rem;
-    line-height: 1.35;
-    color: hsl(var(--ink-2));
-    box-shadow: inset 0 0 0 1px hsl(var(--ink-1) / 0.16);
+  /* Tool logos go monochrome so the page stays black and white. */
+  .logo {
+    filter: grayscale(1) contrast(1.15);
   }
 
-  .tag-solid {
-    background: #fff;
-    box-shadow: 0 0 0 1px hsl(var(--ink-1) / 0.08);
-  }
-
-  /* Pill button. Ink on the gradient, where chalk would wash out. */
-  .pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    border-radius: 999px;
-    padding: 0.6rem 1.05rem;
-    font-size: 0.9375rem;
-    font-weight: 500;
-    line-height: 1.2;
-    background: hsl(var(--ink-1));
-    color: hsl(var(--chalk));
-    transition:
-      background-color 0.2s ease,
-      color 0.2s ease;
-  }
-
-  .pill:hover {
-    background: hsl(var(--chalk));
-    color: hsl(var(--ink-1));
-  }
-
-  .pill-light {
-    background: hsl(var(--mist));
-    color: hsl(var(--ink-1));
-  }
-
-  .pill-light:hover {
-    background: hsl(var(--chalk));
-    color: hsl(var(--ink-1));
-  }
-
-  .text-link {
-    text-decoration: underline;
-    text-decoration-color: hsl(var(--coral));
-    text-decoration-thickness: 2px;
-    text-underline-offset: 0.22em;
-    color: hsl(var(--ink-1));
-    font-weight: 500;
-    transition: text-decoration-color 0.2s ease;
-  }
-
-  .text-link:hover {
-    text-decoration-color: hsl(var(--violet));
+  @media (prefers-color-scheme: dark) {
+    .logo {
+      filter: grayscale(1) invert(1) brightness(1.1);
+    }
   }
 
   .meter {
     position: relative;
-    height: 6px;
+    height: 4px;
     border-radius: 99px;
-    background: hsl(var(--ink-1) / 0.1);
+    background: hsl(var(--line));
     overflow: hidden;
   }
 
@@ -423,71 +197,46 @@
     position: absolute;
     inset: 0 auto 0 0;
     border-radius: 99px;
-    background: linear-gradient(90deg, hsl(var(--sky)), hsl(var(--violet)) 60%, hsl(var(--orchid)));
+    background: hsl(var(--ink-1));
   }
 
   .now-dot {
     display: inline-block;
     flex: none;
-    width: 0.5rem;
-    height: 0.5rem;
+    width: 0.45rem;
+    height: 0.45rem;
     border-radius: 50%;
-    background: hsl(var(--coral));
-    box-shadow: 0 0 0 3px hsl(var(--coral) / 0.2);
+    background: hsl(var(--ink-1));
   }
 
-  /* Page change: the outgoing page leaves toward where it sits in the nav and
-     the incoming one arrives from its own side. --dir is 1 when moving to a
-     later page, -1 when moving back; set by pages/Index.tsx. */
-  .slide-in {
-    animation: slide-in 0.6s var(--ease-out) both;
+  /* Fade up as a section scrolls into view (Section.tsx adds .is-in). */
+  .reveal {
+    opacity: 0;
+    transform: translateY(1.5rem);
+    transition:
+      opacity 0.9s var(--ease-out),
+      transform 0.9s var(--ease-out);
   }
 
-  .slide-out {
-    animation: slide-out 0.6s var(--ease-out) both;
+  .reveal.is-in {
+    opacity: 1;
+    transform: none;
   }
 
-  /* A page that arrives by sliding has had its entrance. The per-element rise
-     is only for the very first page load — without .no-rise it would replay
-     the moment the slide class comes off, and the page would pop in twice. */
-  .slide-out .rise,
-  .no-rise .rise {
-    animation: none;
-  }
-
-  @keyframes slide-in {
-    from {
-      transform: translateX(calc(var(--dir) * 100vw));
-    }
-    to {
-      transform: translateX(0);
-    }
-  }
-
-  @keyframes slide-out {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(calc(var(--dir) * -100vw));
-    }
-  }
-
-  /* The one load sequence: the hero's lines rise in turn while the field
-     blooms behind them. Nothing else on the page animates on its own. */
+  /* The hero's load-in. */
   .rise {
-    animation: rise 0.9s var(--ease-out) both;
+    animation: rise 1s var(--ease-out) both;
     animation-delay: var(--rise-delay, 0ms);
   }
 
   @keyframes rise {
     from {
       opacity: 0;
-      transform: translateY(1.25rem);
+      transform: translateY(1rem);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: none;
     }
   }
 }
@@ -500,5 +249,10 @@
     animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
   }
 }

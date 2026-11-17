@@ -1,11 +1,9 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Contact } from "@/components/site/Contact";
 import { Hero } from "@/components/site/Hero";
-import { Sheet } from "@/components/site/Sheet";
-import { SiteHeader } from "@/components/site/SiteHeader";
+import { Section } from "@/components/site/Section";
 import { VIEWS, viewIndex, type SectionId } from "@/components/site/sections";
-import { cn } from "@/lib/utils";
 import TechStack from "@/components/TechStack";
 import { EducationSection } from "@/components/sections/EducationSection";
 import { ExperienceSection } from "@/components/sections/ExperienceSection";
@@ -24,115 +22,23 @@ const BODIES: Record<SectionId, ReactNode> = {
   hobbies: <HobbiesSection />,
 };
 
-const renderView = (index: number, paged: boolean) => {
+const renderView = (index: number) => {
   const view = VIEWS[index];
   if (view.id === "home") return <Hero />;
-  if (view.id === "contact") return <Contact paged={paged} />;
+  if (view.id === "contact") return <Contact />;
   return (
-    <Sheet id={view.id} paged={paged}>
+    <Section id={view.id}>
       {BODIES[view.id]}
-    </Sheet>
+    </Section>
   );
 };
 
 /**
- * The site has two layouts over the same pages and the same URLs:
- *
- *  - Paged (desktop): one page on screen at a time, changed with the header,
- *    the pager or the arrow keys, sliding sideways in nav order.
- *  - Scrolling (phones, tablets, short windows): every page stacked into one
- *    ordinary scrolling page, which is what a thumb expects. The header links
- *    jump to a section, and the URL follows whichever section is in view.
- *
- * Either way `/experience` shows Experience, and the gradient field (mounted
- * in App) takes its colour from the current path.
+ * One centred page, top to bottom, with no menu. Every section keeps its own
+ * URL: opening `/projects` scrolls there, and the URL follows whichever
+ * section is in view as you scroll.
  */
-const PAGED_QUERY = "(min-width: 1024px) and (min-height: 680px)";
-
-const usePaged = () => {
-  const [paged, setPaged] = useState(() => window.matchMedia(PAGED_QUERY).matches);
-  useEffect(() => {
-    const query = window.matchMedia(PAGED_QUERY);
-    const onChange = () => setPaged(query.matches);
-    query.addEventListener("change", onChange);
-    return () => query.removeEventListener("change", onChange);
-  }, []);
-  return paged;
-};
-
-/** Padding around a page, shared by the live layer and the one sliding away. */
-const LAYER = "flex min-h-0 flex-1 flex-col pb-5 pt-4 lg:pb-6";
-
-/* ---- Paged: one screen at a time, sliding between them ------------------- */
-const PagedSite = () => {
-  const { pathname } = useLocation();
-  const navigate = useNavigate();
-  const index = Math.max(0, viewIndex(pathname));
-
-  /* The page currently on screen, and — while a slide is running — the page
-     being left and which way we are travelling. Derived during render (not in
-     an effect) so the first frame of the new page already has its slide class
-     and never flashes in place. */
-  const [shown, setShown] = useState(index);
-  const [slide, setSlide] = useState<{ from: number; dir: 1 | -1 } | null>(null);
-  // True once the visitor has changed page at least once. From then on pages
-  // enter by sliding, so their own load-in animation stays off for good.
-  const [navigated, setNavigated] = useState(false);
-  if (index !== shown) {
-    setSlide({ from: shown, dir: index > shown ? 1 : -1 });
-    setShown(index);
-    setNavigated(true);
-  }
-
-  // Left / right arrows step through the pages.
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-      const target = VIEWS[index + (event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0)];
-      if (target && target !== VIEWS[index]) navigate(target.path);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [index, navigate]);
-
-  const dirStyle = slide ? ({ "--dir": slide.dir } as CSSProperties) : undefined;
-
-  return (
-    <div className="mx-auto flex h-dvh max-w-[92rem] flex-col px-8">
-      <SiteHeader />
-
-      <main className="relative flex min-h-0 flex-1 flex-col">
-        {slide && (
-          // The page being left. Out of flow; removed when its slide finishes.
-          <div
-            key={`out-${slide.from}`}
-            className={cn(LAYER, "slide-out pointer-events-none absolute inset-0 overflow-hidden")}
-            style={dirStyle}
-            aria-hidden
-          >
-            {renderView(slide.from, true)}
-          </div>
-        )}
-
-        {/* Keyed so each page mounts fresh: a section's right column starts
-            scrolled to the top. */}
-        <div
-          key={index}
-          className={cn(LAYER, slide && "slide-in", navigated && "no-rise")}
-          style={dirStyle}
-          onAnimationEnd={(event) => {
-            if (event.target === event.currentTarget) setSlide(null);
-          }}
-        >
-          {renderView(index, true)}
-        </div>
-      </main>
-    </div>
-  );
-};
-
-/* ---- Scrolling: everything on one page ----------------------------------- */
-const ScrollingSite = () => {
+const Index = () => {
   const location = useLocation();
   const navigate = useNavigate();
   /* Set just before the scroll-spy rewrites the URL, so the effect below can
@@ -141,9 +47,7 @@ const ScrollingSite = () => {
   const fromSpy = useRef(false);
   const first = useRef(true);
 
-  // A link was tapped, or the page was opened at a section's URL: go to it.
-  // Keyed on location.key so tapping the link for the current section still
-  // scrolls back to its top.
+  // The page was opened at a section's URL (or a link changed it): go there.
   useEffect(() => {
     if (fromSpy.current) {
       fromSpy.current = false;
@@ -157,8 +61,8 @@ const ScrollingSite = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- location.key covers pathname
   }, [location.key]);
 
-  // Scroll-spy: the URL (and with it the highlighted nav link and the field's
-  // colour) follows whichever page is crossing the middle of the screen.
+  // Scroll-spy: the URL follows whichever section is crossing the middle of
+  // the screen, so a copied link opens where the reader was.
   const pathRef = useRef(location.pathname);
   pathRef.current = location.pathname;
   useEffect(() => {
@@ -182,30 +86,14 @@ const ScrollingSite = () => {
   }, [navigate]);
 
   return (
-    <div className="mx-auto max-w-[92rem] px-3 sm:px-5 lg:px-8">
-      <SiteHeader sticky />
-
-      <main className="flex flex-col gap-3 pb-4 pt-3 sm:gap-4">
-        {VIEWS.map((view, index) => (
-          <div
-            key={view.id}
-            id={view.id}
-            className={cn(
-              // Clears the sticky header when jumped to.
-              "flex scroll-mt-[6.75rem] flex-col lg:scroll-mt-24",
-              // The hero fills the first screen; contact gets room to land on.
-              view.id === "home" && "min-h-[calc(100svh-7.25rem)]",
-              view.id === "contact" && "min-h-[70svh]",
-            )}
-          >
-            {renderView(index, false)}
-          </div>
-        ))}
-      </main>
-    </div>
+    <main>
+      {VIEWS.map((view, index) => (
+        <div key={view.id} id={view.id}>
+          {renderView(index)}
+        </div>
+      ))}
+    </main>
   );
 };
-
-const Index = () => (usePaged() ? <PagedSite /> : <ScrollingSite />);
 
 export default Index;

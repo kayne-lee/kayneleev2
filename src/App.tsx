@@ -3,7 +3,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { GrainField } from "@/components/site/GrainField";
 import { VIEWS } from "@/components/site/sections";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -16,7 +15,6 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <GrainField />
         <Routes>
           {/* One route per page; Index picks what to show from the path. */}
           {VIEWS.map((view) => (

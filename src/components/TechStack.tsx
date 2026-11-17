@@ -1,5 +1,4 @@
-import { Atom, Bot, Braces, Cloud, Cog, Database, Link, Monitor, RefreshCw, Server, Wind, Workflow, Zap } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Atom, Cog, Database, Link, RefreshCw, Wind, Workflow, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { iconUrl } from "@/assets/icons";
 
@@ -13,12 +12,6 @@ type Skill = {
 
 type Category = {
   title: string;
-  /** The group's own glyph, shown in its (smooth, grain-free) disc. */
-  icon: LucideIcon;
-  /** Disc gradient, from and to. */
-  orb: [string, string];
-  /** Tiles per row inside the card (Tailwind class). */
-  cols: string;
   skills: Skill[];
 };
 
@@ -26,9 +19,6 @@ type Category = {
 const categories: Category[] = [
   {
     title: "Languages",
-    icon: Braces,
-    orb: ["hsl(var(--sky))", "hsl(var(--cobalt))"],
-    cols: "grid-cols-3 min-[380px]:grid-cols-4",
     skills: [
       { name: "Python", icon: "logos:python" },
       { name: "TypeScript", icon: "logos:typescript-icon" },
@@ -42,9 +32,6 @@ const categories: Category[] = [
   },
   {
     title: "Frontend",
-    icon: Monitor,
-    orb: ["hsl(var(--periwinkle))", "hsl(var(--violet))"],
-    cols: "grid-cols-3 xl:grid-cols-5",
     skills: [
       { name: "React", icon: "logos:react" },
       { name: "Next.js", icon: "logos:nextjs-icon" },
@@ -55,9 +42,6 @@ const categories: Category[] = [
   },
   {
     title: "Backend",
-    icon: Server,
-    orb: ["hsl(var(--iris))", "hsl(var(--field-indigo))"],
-    cols: "grid-cols-3",
     skills: [
       { name: "FastAPI", icon: "logos:fastapi-icon" },
       { name: "Django", icon: "logos:django-icon" },
@@ -66,9 +50,6 @@ const categories: Category[] = [
   },
   {
     title: "Databases",
-    icon: Database,
-    orb: ["hsl(var(--sky))", "hsl(var(--violet))"],
-    cols: "grid-cols-3",
     skills: [
       { name: "PostgreSQL", icon: "logos:postgresql" },
       { name: "MongoDB", icon: "logos:mongodb-icon" },
@@ -77,9 +58,6 @@ const categories: Category[] = [
   },
   {
     title: "Agents",
-    icon: Bot,
-    orb: ["hsl(var(--orchid))", "hsl(var(--violet))"],
-    cols: "grid-cols-3",
     skills: [
       { name: "LangGraph", fallback: Workflow },
       { name: "LangChain", fallback: Link },
@@ -88,9 +66,6 @@ const categories: Category[] = [
   },
   {
     title: "Infra",
-    icon: Cloud,
-    orb: ["hsl(var(--peach))", "hsl(var(--field-orchid))"],
-    cols: "grid-cols-3 xl:grid-cols-5",
     skills: [
       { name: "AWS", icon: "logos:aws" },
       { name: "Azure", icon: "logos:azure-icon" },
@@ -101,54 +76,36 @@ const categories: Category[] = [
   },
 ];
 
-/** One tool: its logo over its name. Tiles stretch to share the card's height. */
-const TechTile = ({ skill }: { skill: Skill }) => {
+/** One tool: a tiny logo beside its name. */
+const TechItem = ({ skill }: { skill: Skill }) => {
   const Fallback = skill.fallback;
   return (
-    <li className="flex min-h-[4.25rem] flex-col items-center justify-center gap-1.5 rounded-2xl bg-chalk px-1 py-2.5 text-center">
-      {skill.icon ? (
-        <img src={iconUrl(skill.icon)} alt="" width={28} height={28} loading="lazy" decoding="async" className="h-7 w-7 object-contain" />
-      ) : Fallback ? (
-        <Fallback className="h-7 w-7 text-ink-2" strokeWidth={1.6} aria-hidden />
-      ) : null}
-      <span className="text-[0.75rem] font-medium leading-tight text-ink">{skill.name}</span>
+    <li className="flex items-center gap-2">
+      <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center">
+        {skill.icon ? (
+          <img src={iconUrl(skill.icon)} alt="" width={14} height={14} loading="lazy" decoding="async" className="logo h-3.5 w-3.5 object-contain" />
+        ) : Fallback ? (
+          <Fallback className="h-3.5 w-3.5 text-ink-3" strokeWidth={1.75} aria-hidden />
+        ) : null}
+      </span>
+      {skill.name}
     </li>
   );
 };
 
-/**
- * Six cards in a 2 x 3 grid that fills the sheet. Rows are weighted by how
- * many tools they hold, so the two-row cards (Languages) get the height and
- * nothing is left empty at the bottom.
- */
+/** Each group: a bold label over its tools, two columns of groups. */
 const TechStack = () => (
-  <div className="grid flex-1 gap-4 sm:grid-cols-2 xl:grid-rows-[1.7fr_1fr_1fr] lg:gap-5">
-    {categories.map((category) => {
-      const Icon = category.icon;
-      return (
-        <section
-          key={category.title}
-          className="flex flex-col rounded-[1.75rem] bg-white p-4 shadow-[0_0_0_1px_hsl(var(--ink-1)/0.07)] sm:p-5"
-        >
-          <header className="flex items-center gap-3">
-            <span
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-              style={{ background: `linear-gradient(140deg, ${category.orb[0]}, ${category.orb[1]})` }}
-            >
-              <Icon className="h-5 w-5 text-white" aria-hidden />
-            </span>
-            <h3 className="font-display text-xl font-semibold tracking-[-0.01em] text-ink">{category.title}</h3>
-            <span className="ml-auto text-sm tabular-nums text-ink-3">{category.skills.length}</span>
-          </header>
-
-          <ul className={cn("mt-3.5 grid flex-1 auto-rows-fr gap-2", category.cols)}>
-            {category.skills.map((skill) => (
-              <TechTile key={skill.name} skill={skill} />
-            ))}
-          </ul>
-        </section>
-      );
-    })}
+  <div className="grid grid-cols-2 gap-x-10 gap-y-8 sm:grid-cols-3">
+    {categories.map((category) => (
+      <section key={category.title}>
+        <h3>{category.title}</h3>
+        <ul className="mt-2 space-y-1">
+          {category.skills.map((skill) => (
+            <TechItem key={skill.name} skill={skill} />
+          ))}
+        </ul>
+      </section>
+    ))}
   </div>
 );
 
