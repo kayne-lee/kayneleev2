@@ -20,6 +20,8 @@ export const identity = {
     { label: "kayne.lee2@outlook.com", short: "Email", href: "mailto:kayne.lee2@outlook.com" },
     { label: "linkedin.com/in/kaynelee", short: "LinkedIn", href: "https://www.linkedin.com/in/kaynelee" },
     { label: "github.com/kayne-lee", short: "GitHub", href: "https://github.com/kayne-lee" },
+    { label: "x.com/kayne_lee2", short: "X", href: "https://x.com/kayne_lee2" },
+    { label: "open.spotify.com/user/kaynelee9621", short: "Spotify", href: "https://open.spotify.com/user/kaynelee9621" },
   ],
 } as const;
 
