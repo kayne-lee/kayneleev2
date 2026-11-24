@@ -10,12 +10,14 @@ import { createMcpHandler } from "mcp-handler";
 import { clientIp } from "./_lib/http.js";
 import { redis } from "./_lib/redis.js";
 import { registerAboutTools } from "./_lib/tools/about.js";
+import { registerLiveTools } from "./_lib/tools/live.js";
 import { registerResourcesAndPrompts } from "./_lib/tools/resources.js";
 
 const mcp = createMcpHandler(
   (server) => {
     registerAboutTools(server);
     registerResourcesAndPrompts(server);
+    registerLiveTools(server);
   },
   {
     serverInfo: { name: "kayne-lee", version: "1.0.0" },
