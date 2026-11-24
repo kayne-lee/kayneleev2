@@ -317,3 +317,39 @@ export const current = {
     "Building AI agents",
   ],
 };
+
+/**
+ * What Kayne is looking for right now. Not shown on the site; the MCP server's
+ * get_status tool returns it. Update `updated` whenever you change it.
+ */
+export const status = {
+  updated: "2026-11-24",
+  summary: "Final-year Computer Engineering student at Queen's University, graduating June 2027.",
+  lookingFor: "Full-time software engineering roles starting after graduation in 2027.",
+  interests: ["AI agents", "ML systems", "Backend and infrastructure"],
+};
+
+/**
+ * Questions people (and their assistants) tend to ask. Returned by the MCP
+ * server's faq tool. Answers are in Kayne's own voice.
+ */
+export const faq: { question: string; answer: string }[] = [
+  {
+    question: "Where do you go to school and when do you graduate?",
+    answer: "I'm doing a BASc in Computer Engineering at Queen's University, graduating in June 2027.",
+  },
+  {
+    question: "Where have you worked?",
+    answer:
+      "Most recently I was a Software Engineer Intern at Microsoft (summer 2026) and before that at IBM. I've also been a founding engineer at AdvisorScore and interned at SafetyPower and STraffic America.",
+  },
+  {
+    question: "What are you focused on right now?",
+    answer: "Building AI agents and going deeper on machine learning, plus getting AdvisorScore deployed.",
+  },
+  {
+    question: "What's the best way to reach you?",
+    answer:
+      "Book a short call with the book_meeting tool, or send a note with send_message. Both ask you to confirm your email first, and I read everything that comes through.",
+  },
+];
