@@ -1,10 +1,10 @@
 import { Redis } from "@upstash/redis";
 
 /**
- * Upstash Redis, or null when it isn't configured. Read-only tools still work
- * without it (just uncached and unlimited); anything that sends email or
- * touches the calendar refuses to run without it, since that's where the rate
- * limits and pending requests live.
+ * Upstash Redis, or null when it isn't configured. It's optional: it caches
+ * GitHub and Spotify results, rate-limits the endpoint, and keeps Spotify's
+ * rotated refresh token. Without it everything still works, just uncached
+ * and unlimited.
  *
  * Accepts either UPSTASH_REDIS_REST_* or the KV_REST_API_* names that
  * Vercel's Upstash integration sets.

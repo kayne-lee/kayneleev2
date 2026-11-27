@@ -17,9 +17,8 @@ type Provider = {
 /**
  * A valid access token for one of Kayne's own accounts, refreshed as needed.
  *
- * Both Microsoft and Spotify may hand back a new refresh token on each
- * refresh, and Microsoft's expire if left unused. So the newest one is kept
- * in Redis and the env var is only the starting point. Without Redis this
+ * Spotify may hand back a new refresh token on a refresh, so the newest one
+ * is kept in Redis and the env var is only the starting point. Without Redis this
  * still works, it just refreshes on every call and can't save a rotated token.
  */
 export async function accessToken(p: Provider): Promise<string | null> {

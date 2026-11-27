@@ -350,6 +350,6 @@ export const faq: { question: string; answer: string }[] = [
   {
     question: "What's the best way to reach you?",
     answer:
-      "Book a short call with the book_meeting tool, or send a note with send_message. Both ask you to confirm your email first, and I read everything that comes through.",
+      "Email me at kayne.lee2@outlook.com or message me on LinkedIn (linkedin.com/in/kaynelee).",
   },
 ];

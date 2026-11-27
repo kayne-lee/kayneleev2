@@ -4,7 +4,6 @@
  * MCP server can act as you later. Run it locally, sign in in the browser, and
  * paste the printed refresh token into the matching Vercel env var.
  *
- *   MS_CLIENT_ID=... MS_CLIENT_SECRET=... node scripts/oauth.mjs microsoft
  *   SPOTIFY_CLIENT_ID=... SPOTIFY_CLIENT_SECRET=... node scripts/oauth.mjs spotify
  *
  * The redirect URI printed below must be registered on the app first.
@@ -15,19 +14,6 @@ import { randomBytes } from "node:crypto";
 const PORT = 8787;
 
 const providers = {
-  microsoft: {
-    clientId: process.env.MS_CLIENT_ID,
-    clientSecret: process.env.MS_CLIENT_SECRET,
-    host: "localhost",
-    redirectUri: `http://localhost:${PORT}/callback`,
-    // "consumers" is the endpoint for personal outlook.com / hotmail accounts.
-    authorizeUrl: "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize",
-    tokenUrl: "https://login.microsoftonline.com/consumers/oauth2/v2.0/token",
-    scope: "offline_access User.Read Calendars.ReadWrite Mail.Send",
-    tokenExtra: { scope: "offline_access User.Read Calendars.ReadWrite Mail.Send" },
-    authorizeExtra: { prompt: "consent" },
-    envVar: "MS_REFRESH_TOKEN",
-  },
   spotify: {
     host: "127.0.0.1",
     clientId: process.env.SPOTIFY_CLIENT_ID,
